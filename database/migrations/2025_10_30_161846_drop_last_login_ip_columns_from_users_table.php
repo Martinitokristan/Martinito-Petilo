@@ -12,16 +12,37 @@ class DropLastLoginIpColumnsFromUsersTable extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['last_login_ip', 'last_login_location']);
+        $columnsToDrop = array_filter([
+            'last_login_ip',
+            'last_login_location',
+        ], fn ($column) => Schema::hasColumn('users', $column));
+
+        if (empty($columnsToDrop)) {
+            return;
+        }
+
+        Schema::table('users', function (Blueprint $table) use ($columnsToDrop) {
+            $table->dropColumn($columnsToDrop);
         });
     }
 
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('last_login_ip', 64)->nullable();
-            $table->string('last_login_location', 255)->nullable();
+        $shouldAddIp = ! Schema::hasColumn('users', 'last_login_ip');
+        $shouldAddLocation = ! Schema::hasColumn('users', 'last_login_location');
+
+        if (! $shouldAddIp && ! $shouldAddLocation) {
+            return;
+        }
+
+        Schema::table('users', function (Blueprint $table) use ($shouldAddIp, $shouldAddLocation) {
+            if ($shouldAddIp) {
+                $table->string('last_login_ip', 64)->nullable();
+            }
+
+            if ($shouldAddLocation) {
+                $table->string('last_login_location', 255)->nullable();
+            }
         });
     }
 }
