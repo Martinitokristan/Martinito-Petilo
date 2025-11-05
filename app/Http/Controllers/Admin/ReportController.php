@@ -24,7 +24,30 @@ class ReportController extends Controller
     public function __construct(GoogleSheetsExportService $sheets)
     {
         $this->sheets = $sheets;
+
     }
+        private function buildTabName(string $label, string $suffix): string
+    {
+        $acronym = $this->generateAcronym($label);
+
+        return trim($acronym . ' ' . strtoupper($suffix));
+    }
+
+    private function generateAcronym(string $label): string
+    {
+        $words = preg_split('/[^A-Za-z0-9]+/', $label, -1, PREG_SPLIT_NO_EMPTY);
+        $acronym = collect($words)
+            ->map(fn ($word) => mb_substr($word, 0, 1))
+            ->implode('');
+
+        if ($acronym === '') {
+            $stripped = preg_replace('/[^A-Za-z0-9]/', '', $label);
+            $acronym = mb_substr($stripped ?? '', 0, 4);
+        }
+
+        return strtoupper($acronym ?: 'TAB');
+    }
+
 
     public function getOptions(): JsonResponse
     {
@@ -276,8 +299,8 @@ class ReportController extends Controller
                 $faculty->where('department_id', $departmentId);
             }
             $faculty = $faculty->get();
-            $departmentName = $faculty->first()->department->department_name ?? 'FACULTY_REPORT';
-            $tabName = strtoupper($departmentName) . ' FACULTY';
+            $departmentName = $faculty->first()->department->department_name ?? 'Faculty';
+            $tabName = $this->buildTabName($departmentName, 'FACULTY');
             app(GoogleSheetsExportService::class)->exportFacultyReportToTab($faculty, $tabName);
         }
 
@@ -290,8 +313,8 @@ class ReportController extends Controller
                 $students->where('course_id', $courseId);
             }
             $students = $students->get();
-            $courseName = $students->first()->course->course_name ?? 'STUDENT_REPORT';
-            $tabName = strtoupper($courseName) . ' STUDENT';
+            $courseName = $students->first()->course->course_name ?? 'Student';
+            $tabName = $this->buildTabName($courseName, 'STUDENT');
             app(GoogleSheetsExportService::class)->exportStudentReportToTab($students, $tabName);
         }
 

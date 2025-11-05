@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 class FacultyProfile extends Model
 {
@@ -23,6 +24,7 @@ class FacultyProfile extends Model
         'l_name',
         'suffix',
         'date_of_birth',
+        'age',
         'sex',
         'phone_number',
         'email_address',
@@ -33,6 +35,15 @@ class FacultyProfile extends Model
     ];
 
     protected $dates = ['archived_at'];
+
+    protected static function booted(): void
+    {
+        static::saving(function (FacultyProfile $profile) {
+            if ($profile->date_of_birth) {
+                $profile->age = Carbon::parse($profile->date_of_birth)->age;
+            }
+        });
+    }
 
     public function department()
     {

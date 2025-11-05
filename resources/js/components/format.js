@@ -17,6 +17,7 @@ export const extractAcronym = (name, fallback = "") => {
                 return "";
             }
             return upper[0];
+            
         })
         .filter(Boolean);
 

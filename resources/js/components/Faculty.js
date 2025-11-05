@@ -23,6 +23,7 @@ function Faculty() {
         l_name: "",
         suffix: "",
         date_of_birth: "",
+        age: "",
         sex: "male",
         phone_number: "",
         email_address: "",
@@ -76,6 +77,7 @@ function Faculty() {
             l_name: "",
             suffix: "",
             date_of_birth: "",
+            age: "",
             sex: "male",
             phone_number: "",
             email_address: "",
@@ -135,9 +137,26 @@ function Faculty() {
         return duplicate;
     };
 
+    const computeAge = (date) => {
+        if (!date) return "";
+        const birth = new Date(date);
+        if (Number.isNaN(birth.getTime())) return "";
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age -= 1;
+        }
+        return age < 0 ? "" : age;
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+            ...(name === "date_of_birth" ? { age: computeAge(value) } : {}),
+        }));
         if (name === "email_address") {
             validateDuplicateEmail(value, editingId);
         }
@@ -227,6 +246,7 @@ function Faculty() {
             l_name: facultyMember.l_name,
             suffix: facultyMember.suffix || "",
             date_of_birth: facultyMember.date_of_birth,
+            age: facultyMember.age ?? computeAge(facultyMember.date_of_birth),
             sex: facultyMember.sex,
             phone_number: facultyMember.phone_number,
             email_address: facultyMember.email_address,
@@ -458,6 +478,14 @@ function Faculty() {
                             maxLength="11"
                             title="Please enter a valid Philippine mobile number (11 digits starting with 09)"
                             required
+                        />
+
+                        <label className="form-label-new">Age</label>
+                        <input
+                            className="form-input-new"
+                            value={formData.age}
+                            placeholder="Auto-filled"
+                            readOnly
                         />
 
                         <label className="form-label-new">Status</label>

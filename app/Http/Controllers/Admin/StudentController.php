@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\StudentProfile;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
@@ -31,6 +32,7 @@ class StudentController extends Controller
                 'l_name',
                 'suffix',
                 'date_of_birth',
+                'age',
                 'sex',
                 'phone_number',
                 'email_address',
@@ -87,6 +89,7 @@ class StudentController extends Controller
                 'l_name' => 'required|string|max:255',
                 'suffix' => 'nullable|string|max:50',
                 'date_of_birth' => 'required|date',
+                'age' => 'nullable|integer|min:0|max:150',
                 'sex' => 'required|in:male,female,other',
                 'phone_number' => 'required|regex:/^09[0-9]{9}$/|size:11',
                 'email_address' => 'required|email|unique:student_profiles,email_address',
@@ -98,8 +101,9 @@ class StudentController extends Controller
                 'year_level' => 'required|in:1st,2nd,3rd,4th',
             ]);
 
+            $validated['age'] = Carbon::parse($validated['date_of_birth'])->age;
             $student = StudentProfile::create($validated);
-            return Response::json($student, 201);
+            return Response::json($student->fresh(['department', 'course', 'academicYear']), 201);
         } catch (\Exception $e) {
             Log::error('Error creating student: ', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return Response::json(['error' => 'Failed to create student: ' . $e->getMessage()], 500);
@@ -118,43 +122,42 @@ class StudentController extends Controller
     }
 
     public function update(Request $request, $id)
-{
-    try {
-        $student = StudentProfile::findOrFail($id);
+    {
+        try {
+            $student = StudentProfile::findOrFail($id);
 
-        $validated = $request->validate([
-            'f_name' => 'required|string|max:255',
-            'm_name' => 'nullable|string|max:255', // 
-            'l_name' => 'required|string|max:255',
-            'suffix' => 'nullable|string|max:50', // 
-            'date_of_birth' => 'required|date',
-            'sex' => 'required|in:male,female,other',
-            'phone_number' => 'required|regex:/^09[0-9]{9}$/|size:11',
-            'email_address' => 'required|email|unique:student_profiles,email_address,' . $id . ',student_id',
-            'address' => 'required|string|max:1000',
-            'status' => 'required|in:active,inactive,graduated,dropped',
-            'department_id' => 'required|exists:departments,department_id',
-            'course_id' => 'required|exists:courses,course_id',
-            'academic_year_id' => 'nullable|exists:academic_years,academic_year_id',
-            'year_level' => 'required|in:1st,2nd,3rd,4th',
-        ]);
+            $validated = $request->validate([
+                'f_name' => 'required|string|max:255',
+                'm_name' => 'nullable|string|max:255', // 
+                'l_name' => 'required|string|max:255',
+                'suffix' => 'nullable|string|max:50', // 
+                'date_of_birth' => 'required|date',
+                'age' => 'nullable|integer|min:0|max:150',
+                'sex' => 'required|in:male,female,other',
+                'phone_number' => 'required|regex:/^09[0-9]{9}$/|size:11',
+                'email_address' => 'required|email|unique:student_profiles,email_address,' . $id . ',student_id',
+                'address' => 'required|string|max:1000',
+                'status' => 'required|in:active,inactive,graduated,dropped',
+                'department_id' => 'required|exists:departments,department_id',
+                'course_id' => 'required|exists:courses,course_id',
+                'academic_year_id' => 'nullable|exists:academic_years,academic_year_id',
+                'year_level' => 'required|in:1st,2nd,3rd,4th',
+            ]);
 
-        $student->update($validated);
+            $validated['age'] = Carbon::parse($validated['date_of_birth'])->age;
+            $student->update($validated);
 
-        // ✅ Force reload with updated values & relations
-        $updatedStudent = $student->fresh(['department', 'course', 'academicYear']);
+            // ✅ Force reload with updated values & relations
+            $updatedStudent = $student->fresh(['department', 'course', 'academicYear']);
 
-        return Response::json($updatedStudent, 200);
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return Response::json(['error' => $e->errors()], 422);
-    } catch (\Exception $e) {
-        \Log::error('Error updating student: ', ['message' => $e->getMessage()]);
-        return Response::json(['error' => 'Failed to update student: ' . $e->getMessage()], 500);
+            return Response::json($updatedStudent, 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return Response::json(['error' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error updating student: ', ['message' => $e->getMessage()]);
+            return Response::json(['error' => 'Failed to update student: ' . $e->getMessage()], 500);
+        }
     }
-}
-
-
-
 
     public function archive($id)
     {

@@ -38,6 +38,7 @@ function Students() {
         l_name: "",
         suffix: "",
         date_of_birth: "",
+        age: "",
         sex: "male",
         phone_number: "",
         email_address: "",
@@ -107,6 +108,19 @@ function Students() {
         );
     }
 
+    const computeAge = (date) => {
+        if (!date) return "";
+        const birth = new Date(date);
+        if (Number.isNaN(birth.getTime())) return "";
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age -= 1;
+        }
+        return age < 0 ? "" : age;
+    };
+
     const onOpenForm = () => {
         setEditingId(null);
         setShowForm(true);
@@ -117,6 +131,7 @@ function Students() {
             l_name: "",
             suffix: "",
             date_of_birth: "",
+            age: "",
             sex: "male",
             phone_number: "",
             email_address: "",
@@ -144,6 +159,7 @@ function Students() {
             l_name: student.l_name || "",
             suffix: student.suffix || "",
             date_of_birth: formatDate(student.date_of_birth),
+            age: student.age ?? computeAge(student.date_of_birth),
             sex: student.sex || "male",
             phone_number: student.phone_number || "",
             email_address: student.email_address || "",
@@ -493,6 +509,7 @@ function Students() {
                                 setForm({
                                     ...form,
                                     date_of_birth: e.target.value,
+                                    age: computeAge(e.target.value),
                                 })
                             }
                             type="date"
@@ -532,6 +549,14 @@ function Students() {
                             maxLength="11"
                             title="Please enter a valid Philippine mobile number (11 digits starting with 09)"
                             required
+                        />
+
+                        <label className="form-label-new">Age</label>
+                        <input
+                            className="form-input-new"
+                            value={form.age}
+                            placeholder="Auto-calculated"
+                            readOnly
                         />
 
                         <label className="form-label-new">Email</label>

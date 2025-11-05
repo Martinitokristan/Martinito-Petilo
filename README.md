@@ -4,13 +4,16 @@
 
 # GIT CLONING
 
-composer require doctrine/dbal
 
 composer install
 
 npm install
 
+composer require doctrine/dbal
+
 npm install react-icons lucide-react jspdf jspdf-autotable
+
+npm install recharts
 
 # ALL INSTALL IN DEVELOPMENT
 
@@ -29,5 +32,7 @@ npm install lucide-react
 npm install react-icons
 
 npm install jspdf jspdf-autotable
+
+npm install recharts
 
 composer require google/apiclient:^2.0 --with-all-dependencies
