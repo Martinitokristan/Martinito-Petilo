@@ -31,6 +31,7 @@ const FACULTY_COLUMNS = [
     { key: "phone_number", label: "Phone" },
     { key: "department", label: "Department" },
     { key: "position", label: "Position" },
+    { key: "status", label: "Status" },
 ];
 
 function Report() {
@@ -110,6 +111,7 @@ function Report() {
             phone_number: member.phone_number || "",
             department: member.department_name || "",
             position: member.position || "",
+            status: member.status || "",
         }));
 
     // Generate Report

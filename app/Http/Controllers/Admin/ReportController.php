@@ -24,9 +24,9 @@ class ReportController extends Controller
     public function __construct(GoogleSheetsExportService $sheets)
     {
         $this->sheets = $sheets;
-
     }
-        private function buildTabName(string $label, string $suffix): string
+
+    private function buildTabName(string $label, string $suffix): string
     {
         $acronym = $this->generateAcronym($label);
 
@@ -36,7 +36,10 @@ class ReportController extends Controller
     private function generateAcronym(string $label): string
     {
         $words = preg_split('/[^A-Za-z0-9]+/', $label, -1, PREG_SPLIT_NO_EMPTY);
+        $stopWords = ['and', 'of', 'in', 'the', 'for', 'a', 'an', 'to'];
+
         $acronym = collect($words)
+            ->reject(fn ($word) => in_array(strtolower($word), $stopWords, true))
             ->map(fn ($word) => mb_substr($word, 0, 1))
             ->implode('');
 
@@ -47,7 +50,6 @@ class ReportController extends Controller
 
         return strtoupper($acronym ?: 'TAB');
     }
-
 
     public function getOptions(): JsonResponse
     {
@@ -292,30 +294,111 @@ class ReportController extends Controller
 
         if ($type === 'faculty') {
             $departmentId = $request->input('department_id');
+
             $faculty = \App\Models\FacultyProfile::query()
-                ->with(['department'])
+                ->select([
+                    'faculty_id',
+                    'f_name',
+                    'm_name',
+                    'l_name',
+                    'suffix',
+                    'email_address',
+                    'phone_number',
+                    'position',
+                    'status',
+                    'department_id',
+                ])
+                ->with(['department:department_id,department_name'])
                 ->whereNull('archived_at');
+
             if ($departmentId) {
                 $faculty->where('department_id', $departmentId);
             }
+
             $faculty = $faculty->get();
-            $departmentName = $faculty->first()->department->department_name ?? 'Faculty';
+
+            $departmentName = optional($faculty->first()->department ?? null)->department_name ?? 'Faculty';
             $tabName = $this->buildTabName($departmentName, 'FACULTY');
-            app(GoogleSheetsExportService::class)->exportFacultyReportToTab($faculty, $tabName);
+
+            $rows = $faculty->map(function ($member) {
+                $fullName = trim(collect([
+                    $member->f_name,
+                    $member->m_name,
+                    $member->l_name,
+                    $member->suffix,
+                ])->filter()->implode(' '));
+
+                return [
+                    $member->faculty_id,
+                    $fullName,
+                    $member->email_address,
+                    $member->phone_number,
+                    optional($member->department)->department_name,
+                    $member->position,
+                    $member->status,
+                ];
+            });
+
+            app(GoogleSheetsExportService::class)->exportRowsToTab(
+                ['Faculty ID', 'Name', 'Email', 'Phone', 'Department', 'Position', 'Status'],
+                $rows,
+                $tabName
+            );
         }
 
         if ($type === 'student') {
             $courseId = $request->input('course_id');
+
             $students = \App\Models\StudentProfile::query()
-                ->with(['course', 'department'])
+                ->select([
+                    'student_id',
+                    'f_name',
+                    'm_name',
+                    'l_name',
+                    'suffix',
+                    'email_address',
+                    'status',
+                    'course_id',
+                    'department_id',
+                ])
+                ->with([
+                    'course:course_id,course_name',
+                    'department:department_id,department_name',
+                ])
                 ->whereNull('archived_at');
+
             if ($courseId) {
                 $students->where('course_id', $courseId);
             }
+
             $students = $students->get();
-            $courseName = $students->first()->course->course_name ?? 'Student';
+
+            $courseName = optional($students->first()->course ?? null)->course_name ?? 'Student';
             $tabName = $this->buildTabName($courseName, 'STUDENT');
-            app(GoogleSheetsExportService::class)->exportStudentReportToTab($students, $tabName);
+
+            $rows = $students->map(function ($student) {
+                $fullName = trim(collect([
+                    $student->f_name,
+                    $student->m_name,
+                    $student->l_name,
+                    $student->suffix,
+                ])->filter()->implode(' '));
+
+                return [
+                    'student_id' => $student->student_id,
+                    'name' => $fullName,
+                    'email' => $student->email_address,
+                    'course' => optional($student->course)->course_name,
+                    'department' => optional($student->department)->department_name,
+                    'status' => $student->status,
+                ];
+            });
+
+            app(GoogleSheetsExportService::class)->exportRowsToTab(
+                ['student_id', 'name', 'email', 'course', 'department', 'status'],
+                $rows,
+                $tabName
+            );
         }
 
         return response()->json(['success' => true]);
@@ -323,32 +406,86 @@ class ReportController extends Controller
 
     public function exportStudentData(Request $request)
     {
-        $students = StudentProfile::query()->whereNull('archived_at')->get();
-        $existingCourseIds = $this->sheets->getExistingCourseIds('Students');
+        $students = StudentProfile::query()
+            ->with([
+                'course:course_id,course_name',
+                'department:department_id,department_name',
+                'academicYear:academic_year_id,school_year',
+            ])
+            ->whereNull('archived_at')
+            ->orderBy('student_id')
+            ->get();
 
-        $newStudents = $students->filter(function ($student) use ($existingCourseIds) {
-            return !in_array($student->course_id, $existingCourseIds);
+        $headers = [
+            'student_id',
+            'name',
+            'email',
+            'course',
+            'department',
+            'academic_year',
+            'status',
+        ];
+
+        $rows = $students->map(function (StudentProfile $student) {
+            $fullName = trim(collect([
+                $student->f_name,
+                $student->m_name,
+                $student->l_name,
+                $student->suffix,
+            ])->filter()->implode(' '));
+
+            return [
+                $student->student_id,
+                $fullName,
+                $student->email_address,
+                optional($student->course)->course_name,
+                optional($student->department)->department_name,
+                optional($student->academicYear)->school_year,
+                $student->status,
+            ];
         });
 
-        if ($newStudents->isNotEmpty()) {
-            $this->sheets->appendStudentsToSheet($newStudents, 'Students');
-        }
+        $this->sheets->exportRowsToTab($headers, $rows, 'Students');
 
         return response()->json(['success' => true]);
     }
 
     public function exportFacultyData(Request $request)
     {
-        $faculty = FacultyProfile::query()->whereNull('archived_at')->get();
-        $existingDepartmentIds = $this->sheets->getExistingDepartmentIds('Faculty');
+        $faculty = FacultyProfile::query()
+            ->with(['department:department_id,department_name'])
+            ->whereNull('archived_at')
+            ->orderBy('faculty_id')
+            ->get();
 
-        $newFaculty = $faculty->filter(function ($member) use ($existingDepartmentIds) {
-            return !in_array($member->department_id, $existingDepartmentIds);
+        $headers = [
+            'faculty_id',
+            'name',
+            'email',
+            'department',
+            'position',
+            'status',
+        ];
+
+        $rows = $faculty->map(function (FacultyProfile $member) {
+            $fullName = trim(collect([
+                $member->f_name,
+                $member->m_name,
+                $member->l_name,
+                $member->suffix,
+            ])->filter()->implode(' '));
+
+            return [
+                $member->faculty_id,
+                $fullName,
+                $member->email_address,
+                optional($member->department)->department_name,
+                $member->position,
+                $member->status,
+            ];
         });
 
-        if ($newFaculty->isNotEmpty()) {
-            $this->sheets->appendFacultyToSheet($newFaculty, 'Faculty');
-        }
+        $this->sheets->exportRowsToTab($headers, $rows, 'Faculty');
 
         return response()->json(['success' => true]);
     }

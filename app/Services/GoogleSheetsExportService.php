@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Google\Client;
 use Google\Service\Sheets;
+use Google\Service\Sheets\ClearValuesRequest;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -38,16 +39,21 @@ class GoogleSheetsExportService
 
     public function exportStudentReport($students)
     {
-        $values = [];
-        $values[] = [
+        $this->exportStudentReportToTab($students, $this->sheetName);
+    }
+
+    public function exportStudentReportToTab($students, string $sheetName)
+    {
+        $headers = [
             'student_id', 'f_name', 'm_name', 'l_name', 'suffix',
             'date_of_birth', 'age', 'sex', 'phone_number', 'email_address',
-            'address', 'status', 'department_id', 'course_id',
-            'academic_year_id', 'year_level', 'created_at', 'updated_at', 'archived_at'
+            'address', 'status', 'department', 'course',
+            'academic_year', 'year_level', 'created_at', 'updated_at', 'archived_at'
         ];
 
+        $rows = [];
         foreach ($students as $student) {
-            $values[] = [
+            $rows[] = [
                 $student->student_id ?? '',
                 $student->f_name ?? '',
                 $student->m_name ?? '',
@@ -60,9 +66,9 @@ class GoogleSheetsExportService
                 $student->email_address ?? '',
                 $student->address ?? '',
                 $student->status ?? '',
-                $student->department_id ?? '',
-                $student->course_id ?? '',
-                $student->academic_year_id ?? '',
+                optional($student->department)->department_name ?? '',
+                optional($student->course)->course_name ?? '',
+                optional($student->academicYear)->school_year ?? '',
                 $student->year_level ?? '',
                 $student->created_at ? date('Y-m-d', strtotime($student->created_at)) : '',
                 $student->updated_at ? date('Y-m-d', strtotime($student->updated_at)) : '',
@@ -70,25 +76,7 @@ class GoogleSheetsExportService
             ];
         }
 
-        $body = new Sheets\ValueRange([
-            'values' => $values
-        ]);
-        $params = ['valueInputOption' => 'RAW'];
-
-        try {
-            $this->service->spreadsheets_values->update(
-                $this->spreadsheetId,
-                $this->sheetName . '!A1',
-                $body,
-                $params
-            );
-            // Auto resize columns
-            $this->autoResizeColumns($this->sheetName, count($values[0]));
-            Log::info('✅ Student report successfully exported to Google Sheets.');
-        } catch (\Exception $e) {
-            Log::error('❌ Google Sheets export failed: ' . $e->getMessage());
-            throw $e;
-        }
+        $this->exportRowsToTab($headers, $rows, $sheetName);
     }
 
     protected function resolveAge($dateOfBirth, $storedAge)
@@ -164,16 +152,21 @@ class GoogleSheetsExportService
 
     public function exportFacultyReport($faculties)
     {
-        $values = [];
-        $values[] = [
+        $this->exportFacultyReportToTab($faculties, 'Faculty');
+    }
+
+    public function exportFacultyReportToTab($faculties, string $sheetName)
+    {
+        $headers = [
             'faculty_id', 'f_name', 'm_name', 'l_name', 'suffix',
             'date_of_birth', 'age', 'sex', 'phone_number', 'email_address',
-            'address', 'position', 'status', 'department_id',
+            'address', 'position', 'status', 'department',
             'created_at', 'updated_at', 'archived_at'
         ];
 
+        $rows = [];
         foreach ($faculties as $faculty) {
-            $values[] = [
+            $rows[] = [
                 $faculty->faculty_id ?? '',
                 $faculty->f_name ?? '',
                 $faculty->m_name ?? '',
@@ -187,32 +180,14 @@ class GoogleSheetsExportService
                 $faculty->address ?? '',
                 $faculty->position ?? '',
                 $faculty->status ?? '',
-                $faculty->department_id ?? '',
+                optional($faculty->department)->department_name ?? '',
                 $faculty->created_at ? date('Y-m-d', strtotime($faculty->created_at)) : '',
                 $faculty->updated_at ? date('Y-m-d', strtotime($faculty->updated_at)) : '',
                 $faculty->archived_at ? date('Y-m-d', strtotime($faculty->archived_at)) : '',
             ];
         }
 
-        $body = new Sheets\ValueRange([
-            'values' => $values
-        ]);
-        $params = ['valueInputOption' => 'RAW'];
-
-        try {
-            $this->service->spreadsheets_values->update(
-                $this->spreadsheetId,
-                'Faculty!A1',
-                $body,
-                $params
-            );
-            // Auto resize columns
-            $this->autoResizeColumns('Faculty', count($values[0]));
-            Log::info('✅ Faculty report successfully exported to Google Sheets.');
-        } catch (\Exception $e) {
-            Log::error('❌ Google Sheets faculty export failed: ' . $e->getMessage());
-            throw $e;
-        }
+        $this->exportRowsToTab($headers, $rows, $sheetName);
     }
 
     public function appendStudentsToSheet($students, $sheetName = 'Students')
@@ -285,6 +260,84 @@ class GoogleSheetsExportService
             $body,
             $params
         );
+    }
+
+    private function ensureSheetExists(string $sheetName): void
+    {
+        try {
+            $spreadsheet = $this->service->spreadsheets->get($this->spreadsheetId);
+        } catch (\Exception $e) {
+            Log::warning('Unable to load spreadsheet metadata.', ['sheet' => $sheetName, 'error' => $e->getMessage()]);
+            throw $e;
+        }
+
+        foreach ($spreadsheet->getSheets() as $sheet) {
+            if ($sheet->getProperties()->getTitle() === $sheetName) {
+                return;
+            }
+        }
+
+        $request = new Sheets\Request([
+            'addSheet' => [
+                'properties' => [
+                    'title' => $sheetName,
+                ],
+            ],
+        ]);
+
+        $batchUpdateRequest = new Sheets\BatchUpdateSpreadsheetRequest([
+            'requests' => [$request],
+        ]);
+
+        try {
+            $this->service->spreadsheets->batchUpdate($this->spreadsheetId, $batchUpdateRequest);
+        } catch (\Exception $e) {
+            Log::error('Failed to add sheet.', ['sheet' => $sheetName, 'error' => $e->getMessage()]);
+            throw $e;
+        }
+    }
+
+    private function clearSheet(string $sheetName): void
+    {
+        try {
+            $this->service->spreadsheets_values->clear(
+                $this->spreadsheetId,
+                $sheetName,
+                new ClearValuesRequest()
+            );
+        } catch (\Exception $e) {
+            Log::warning('Failed to clear sheet before export.', ['sheet' => $sheetName, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function exportRowsToTab(array $headers, iterable $rows, string $sheetName): void
+    {
+        $values = [array_values($headers)];
+        foreach ($rows as $row) {
+            $values[] = array_map(fn ($value) => $value ?? '', is_array($row) ? array_values($row) : (array) $row);
+        }
+
+        $this->ensureSheetExists($sheetName);
+        $this->clearSheet($sheetName);
+
+        $body = new Sheets\ValueRange([
+            'values' => $values,
+        ]);
+        $params = ['valueInputOption' => 'RAW'];
+
+        try {
+            $this->service->spreadsheets_values->update(
+                $this->spreadsheetId,
+                $sheetName . '!A1',
+                $body,
+                $params
+            );
+            $this->autoResizeColumns($sheetName, count($headers));
+            Log::info('✅ Rows exported to Google Sheets tab.', ['tab' => $sheetName]);
+        } catch (\Exception $e) {
+            Log::error('❌ Google Sheets export failed.', ['tab' => $sheetName, 'error' => $e->getMessage()]);
+            throw $e;
+        }
     }
 
     public function getSpreadsheetId()
