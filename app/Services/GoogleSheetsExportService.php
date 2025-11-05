@@ -34,7 +34,7 @@ class GoogleSheetsExportService
         $this->spreadsheetId = '1UGytf-SSjVcb1DWDwFTr9R33m6CNbcYU0R_Wit8sYro';
 
         // ✅ Use the correct sheet tab name (“Students”)
-        $this->sheetName = 'Students';
+        $this->sheetName = 'All Students Data';
     }
 
     public function exportStudentReport($students)
@@ -152,7 +152,7 @@ class GoogleSheetsExportService
 
     public function exportFacultyReport($faculties)
     {
-        $this->exportFacultyReportToTab($faculties, 'Faculty');
+        $this->exportFacultyReportToTab($faculties, 'All Faculty Data');
     }
 
     public function exportFacultyReportToTab($faculties, string $sheetName)

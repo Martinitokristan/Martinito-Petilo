@@ -12388,3 +12388,11 @@ operable program or batch file.
 [2025-11-05 14:34:46] local.INFO: Request data: {"export":"json"} 
 [2025-11-05 14:34:49] local.INFO: Request data: {"export":"google_sheets"} 
 [2025-11-05 14:34:52] local.INFO: ✅ Rows exported to Google Sheets tab. {"tab":"Students"} 
+[2025-11-05 14:44:07] local.INFO: ✅ Rows exported to Google Sheets tab. {"tab":"Faculty"} 
+[2025-11-05 14:44:46] local.INFO: Request data: {"export":"json"} 
+[2025-11-05 14:44:49] local.INFO: Request data: {"export":"google_sheets"} 
+[2025-11-05 14:44:52] local.INFO: ✅ Rows exported to Google Sheets tab. {"tab":"Students All Data"} 
+[2025-11-05 14:48:53] local.INFO: Request data: {"export":"json"} 
+[2025-11-05 14:48:54] local.INFO: Request data: {"export":"google_sheets"} 
+[2025-11-05 14:48:58] local.INFO: ✅ Rows exported to Google Sheets tab. {"tab":"All Students Data"} 
+[2025-11-05 14:49:18] local.INFO: ✅ Rows exported to Google Sheets tab. {"tab":"All Faculty Data"} 
