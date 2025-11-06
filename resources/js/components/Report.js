@@ -48,6 +48,8 @@ function Report() {
     const [modalState, setModalState] = useState(""); // "", "loading", "success", "error"
     const [modalMessage, setModalMessage] = useState("");
 
+    const hasTableData = tableRows.length > 0;
+
     // Fetch filter options on mount
     useEffect(() => {
         async function fetchFilters() {
@@ -58,12 +60,12 @@ function Report() {
                     axios.get("/api/departments"),
                 ]);
                 setCourses(
-                    Array.isArray(coursesRes.data) ? coursesRes.data : []
+                    Array.isArray(coursesRes.data) ? coursesRes.data : [],
                 );
                 setDepartments(
                     Array.isArray(departmentsRes.data)
                         ? departmentsRes.data
-                        : []
+                        : [],
                 );
             } catch {
                 setModalState("error");
@@ -127,13 +129,13 @@ function Report() {
                     {
                         course_id: selectedCourse || undefined,
                         export: "json",
-                    }
+                    },
                 );
                 setTableColumns(STUDENT_COLUMNS);
                 setTableRows(
                     buildStudentRows(
-                        Array.isArray(data.students) ? data.students : []
-                    )
+                        Array.isArray(data.students) ? data.students : [],
+                    ),
                 );
             } else {
                 const { data } = await axios.post(
@@ -141,13 +143,13 @@ function Report() {
                     {
                         department_id: selectedDepartment || undefined,
                         export: "json",
-                    }
+                    },
                 );
                 setTableColumns(FACULTY_COLUMNS);
                 setTableRows(
                     buildFacultyRows(
-                        Array.isArray(data.faculty) ? data.faculty : []
-                    )
+                        Array.isArray(data.faculty) ? data.faculty : [],
+                    ),
                 );
             }
         } catch {
@@ -172,7 +174,7 @@ function Report() {
             autoTable.default(doc, {
                 head: [tableColumns.map((col) => col.label)],
                 body: tableRows.map((row) =>
-                    tableColumns.map((col) => row[col.key])
+                    tableColumns.map((col) => row[col.key]),
                 ),
             });
             doc.save(`${reportType}_report.pdf`);
@@ -218,7 +220,7 @@ function Report() {
             });
             setModalState("success");
             setModalMessage(
-                "Student data exported to Google Sheets successfully!"
+                "Student data exported to Google Sheets successfully!",
             );
         } catch (err) {
             console.error("Export Student Data Error:", err); // <-- log error
@@ -240,7 +242,7 @@ function Report() {
             });
             setModalState("success");
             setModalMessage(
-                "Faculty data exported to Google Sheets successfully!"
+                "Faculty data exported to Google Sheets successfully!",
             );
         } catch (err) {
             console.error("Export Faculty Data Error:", err); // <-- log error
@@ -274,7 +276,7 @@ function Report() {
         try {
             await ensureCsrf();
             const { data } = await axios.post(
-                "/api/admin/reports/import-faculty"
+                "/api/admin/reports/import-faculty",
             );
             if (data.success) {
                 setReportType(REPORT_TYPES.faculty);
@@ -289,7 +291,7 @@ function Report() {
                     data.message +
                         (data.errors && data.errors.length
                             ? "\n" + data.errors.join("\n")
-                            : "")
+                            : ""),
                 );
             }
         } catch {
@@ -419,7 +421,9 @@ function Report() {
                                 <select
                                     className="filter"
                                     value={reportType}
-                                    onChange={(e) => setReportType(e.target.value)}
+                                    onChange={(e) =>
+                                        setReportType(e.target.value)
+                                    }
                                 >
                                     <option value={REPORT_TYPES.student}>
                                         Student Report
@@ -458,10 +462,14 @@ function Report() {
                                         className="filter"
                                         value={selectedDepartment}
                                         onChange={(e) =>
-                                            setSelectedDepartment(e.target.value)
+                                            setSelectedDepartment(
+                                                e.target.value,
+                                            )
                                         }
                                     >
-                                        <option value="">All Departments</option>
+                                        <option value="">
+                                            All Departments
+                                        </option>
                                         {departments.map((dept) => (
                                             <option
                                                 key={dept.department_id}
@@ -482,7 +490,8 @@ function Report() {
                             >
                                 {loading ? (
                                     <span>
-                                        <span className="spinner"></span> Generating...
+                                        <span className="spinner"></span>{" "}
+                                        Generating...
                                     </span>
                                 ) : (
                                     "Generate Report"
@@ -523,44 +532,42 @@ function Report() {
                     </div>
                 </section>
 
-                <div className="table-wrapper">
-                    <table className="students-table">
-                        <thead>
-                            <tr>
-                                {tableColumns.map((col) => (
-                                    <th key={col.key}>{col.label}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {tableRows.length > 0 ? (
-                                tableRows.map((row, idx) => (
+                {hasTableData ? (
+                    <div className="table-wrapper">
+                        <table className="students-table">
+                            <thead>
+                                <tr>
+                                    {tableColumns.map((col) => (
+                                        <th key={col.key}>{col.label}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {tableRows.map((row, idx) => (
                                     <tr key={idx}>
                                         {tableColumns.map((col) => (
-                                            <td key={col.key}>{row[col.key]}</td>
+                                            <td key={col.key}>
+                                                {row[col.key]}
+                                            </td>
                                         ))}
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td
-                                        colSpan={tableColumns.length}
-                                        style={{
-                                            textAlign: "center",
-                                            color: "#888",
-                                        }}
-                                    >
-                                        {loading
-                                            ? ""
-                                            : "Click 'Generate Report' to see the data."}
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    !loading && (
+                        <div className="report-empty-state">
+                            Click 'Generate Report' to see the data.
+                        </div>
+                    )
+                )}
 
-                <div className="report-export-row">
+                <div
+                    className={`report-export-row ${
+                        hasTableData ? "" : "is-empty"
+                    }`.trim()}
+                >
                     <button
                         className="btn btn-primary"
                         onClick={handleDownloadPdf}

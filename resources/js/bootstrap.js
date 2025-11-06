@@ -27,5 +27,5 @@ window.axios.interceptors.response.use(
             window.location.href = "/401";
         }
         return Promise.reject(error);
-    }
+    },
 );

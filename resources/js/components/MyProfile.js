@@ -11,33 +11,44 @@ const formatRelativeTime = (date) => {
     const totalSeconds = Math.floor(absMs / 1000);
 
     if (totalSeconds < 1) return diffMs >= 0 ? "Just now" : "In moments";
-    if (totalSeconds < 60)
-        return `${totalSeconds}s ${tense}`;
+    if (totalSeconds < 60) return `${totalSeconds}s ${tense}`;
 
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     if (minutes < 60) {
         const minuteLabel = `${minutes} minute${minutes === 1 ? "" : "s"}`;
-        const secondLabel = seconds ? ` ${seconds.toString().padStart(2, "0")}s` : "";
+        const secondLabel = seconds
+            ? ` ${seconds.toString().padStart(2, "0")}s`
+            : "";
         return `${minuteLabel}${secondLabel} ${tense}`;
     }
 
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
     const hourLabel = `${hours} hour${hours === 1 ? "" : "s"}`;
-    const minuteLabel = remainingMinutes ? ` ${remainingMinutes.toString().padStart(2, "0")}m` : "";
-    const secondLabel = seconds ? ` ${seconds.toString().padStart(2, "0")}s` : "";
+    const minuteLabel = remainingMinutes
+        ? ` ${remainingMinutes.toString().padStart(2, "0")}m`
+        : "";
+    const secondLabel = seconds
+        ? ` ${seconds.toString().padStart(2, "0")}s`
+        : "";
     if (hours < 24) return `${hourLabel}${minuteLabel}${secondLabel} ${tense}`;
 
     const days = Math.floor(hours / 24);
     const remainingHours = hours % 24;
     const dayLabel = `${days} day${days === 1 ? "" : "s"}`;
-    const hourPart = remainingHours ? ` ${remainingHours.toString().padStart(2, "0")}h` : "";
-    const minutePart = remainingMinutes ? ` ${remainingMinutes.toString().padStart(2, "0")}m` : "";
-    if (days < 30) return `${dayLabel}${hourPart}${minutePart}${secondLabel} ${tense}`;
+    const hourPart = remainingHours
+        ? ` ${remainingHours.toString().padStart(2, "0")}h`
+        : "";
+    const minutePart = remainingMinutes
+        ? ` ${remainingMinutes.toString().padStart(2, "0")}m`
+        : "";
+    if (days < 30)
+        return `${dayLabel}${hourPart}${minutePart}${secondLabel} ${tense}`;
 
     const months = Math.floor(days / 30);
-    if (months < 12) return `${months} month${months === 1 ? "" : "s"} ${tense}`;
+    if (months < 12)
+        return `${months} month${months === 1 ? "" : "s"} ${tense}`;
 
     const years = Math.floor(days / 365);
     return `${years} year${years === 1 ? "" : "s"} ${tense}`;
@@ -68,9 +79,11 @@ const describeAgent = (agent) => {
     if (lowered.includes("edg")) return "Microsoft Edge";
     if (lowered.includes("chrome")) return "Google Chrome";
     if (lowered.includes("firefox")) return "Mozilla Firefox";
-    if (lowered.includes("safari") && !lowered.includes("chrome")) return "Safari";
+    if (lowered.includes("safari") && !lowered.includes("chrome"))
+        return "Safari";
     if (lowered.includes("opr") || lowered.includes("opera")) return "Opera";
-    if (lowered.includes("msie") || lowered.includes("trident")) return "Internet Explorer";
+    if (lowered.includes("msie") || lowered.includes("trident"))
+        return "Internet Explorer";
     return agent;
 };
 
@@ -263,7 +276,7 @@ function MyProfile() {
                 formData.append("new_password", newPassword);
                 formData.append(
                     "new_password_confirmation",
-                    newPasswordConfirmation
+                    newPasswordConfirmation,
                 );
             }
 
@@ -381,11 +394,11 @@ function MyProfile() {
 
     const createdParts = useMemo(
         () => getDateParts(profile.created_at),
-        [profile.created_at, timeTick]
+        [profile.created_at, timeTick],
     );
     const lastLoginParts = useMemo(
         () => getDateParts(profile.last_login_at),
-        [profile.last_login_at, timeTick]
+        [profile.last_login_at, timeTick],
     );
     const lastLoginDevice = describeAgent(profile.last_login_agent);
 
@@ -460,30 +473,47 @@ function MyProfile() {
                                 <h4>Last Login</h4>
                                 {lastLoginParts ? (
                                     <>
-                                        <div className="meta-date">{lastLoginParts.dateLabel}</div>
-                                        <div className="meta-time">{lastLoginParts.timeLabel}</div>
-                                        <div className="meta-relative">{lastLoginParts.relativeLabel}</div>
+                                        <div className="meta-date">
+                                            {lastLoginParts.dateLabel}
+                                        </div>
+                                        <div className="meta-time">
+                                            {lastLoginParts.timeLabel}
+                                        </div>
+                                        <div className="meta-relative">
+                                            {lastLoginParts.relativeLabel}
+                                        </div>
                                     </>
                                 ) : (
-                                    <div className="meta-empty">First session</div>
+                                    <div className="meta-empty">
+                                        First session
+                                    </div>
                                 )}
-                                <div className="meta-device">{lastLoginDevice}</div>
+                                <div className="meta-device">
+                                    {lastLoginDevice}
+                                </div>
                             </div>
 
                             <div className="meta-card created">
                                 <h4>Account Created</h4>
                                 {createdParts ? (
                                     <>
-                                        <div className="meta-date">{createdParts.dateLabel}</div>
-                                        <div className="meta-time">{createdParts.timeLabel}</div>
-                                        <div className="meta-relative">{createdParts.relativeLabel}</div>
+                                        <div className="meta-date">
+                                            {createdParts.dateLabel}
+                                        </div>
+                                        <div className="meta-time">
+                                            {createdParts.timeLabel}
+                                        </div>
+                                        <div className="meta-relative">
+                                            {createdParts.relativeLabel}
+                                        </div>
                                     </>
                                 ) : (
-                                    <div className="meta-empty">No creation date</div>
+                                    <div className="meta-empty">
+                                        No creation date
+                                    </div>
                                 )}
                             </div>
                         </div>
-
                     </div>
 
                     <div className="card form-card">
@@ -608,7 +638,7 @@ function MyProfile() {
                                         value={newPasswordConfirmation}
                                         onChange={(e) =>
                                             setNewPasswordConfirmation(
-                                                e.target.value
+                                                e.target.value,
                                             )
                                         }
                                         className={`form-input ${
@@ -766,21 +796,21 @@ function MyProfile() {
                         <div className="success-content">
                             <div className="success-icon-wrapper">
                                 <svg
-                            className="success-icon-svg"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="52"
-                            height="52"
-                            viewBox="0 0 52 52"
-                        >
-                            <path
-                                fill="none"
-                                stroke="#ffffff"
-                                strokeWidth="8"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M16 28 L24 36 L40 20"
-                            />
-                        </svg>
+                                    className="success-icon-svg"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="52"
+                                    height="52"
+                                    viewBox="0 0 52 52"
+                                >
+                                    <path
+                                        fill="none"
+                                        stroke="#ffffff"
+                                        strokeWidth="8"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M16 28 L24 36 L40 20"
+                                    />
+                                </svg>
                             </div>
                             <h4 className="success-title">Success!</h4>
                             <p className="success-subtitle">{modalMessage}</p>

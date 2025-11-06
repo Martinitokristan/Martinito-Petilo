@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Google\Client;
 use Google\Service\Sheets;
+use Google\Service\Exception as GoogleServiceException;
 use Google\Service\Sheets\ClearValuesRequest;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -196,84 +197,6 @@ class GoogleSheetsExportService
         $this->exportRowsToTab($headers, $rows, $sheetName);
     }
 
-    public function appendStudentsToSheet($students, $sheetName = 'Students')
-    {
-        $values = [];
-        foreach ($students as $student) {
-            $values[] = [
-                $student->student_id ?? '',
-                $student->f_name ?? '',
-                $student->m_name ?? '',
-                $student->l_name ?? '',
-                $student->suffix ?? '',
-                $student->date_of_birth ?? '',
-                $this->resolveAge($student->date_of_birth ?? null, $student->age ?? null),
-                $student->sex ?? '',
-                $student->phone_number ?? '',
-                $student->email_address ?? '',
-                $student->address ?? '',
-                $student->region ?? '',
-                $student->province ?? '',
-                $student->municipality ?? '',
-                $student->status ?? '',
-                $student->department_id ?? '',
-                $student->course_id ?? '',
-                $student->academic_year_id ?? '',
-                $student->year_level ?? '',
-                $student->created_at ? date('Y-m-d', strtotime($student->created_at)) : '',
-                $student->updated_at ? date('Y-m-d', strtotime($student->updated_at)) : '',
-                $student->archived_at ? date('Y-m-d', strtotime($student->archived_at)) : '',
-            ];
-        }
-
-        $body = new \Google\Service\Sheets\ValueRange(['values' => $values]);
-        $params = ['valueInputOption' => 'RAW', 'insertDataOption' => 'INSERT_ROWS'];
-        $this->service->spreadsheets_values->append(
-            $this->spreadsheetId,
-            $sheetName . '!A1',
-            $body,
-            $params
-        );
-    }
-
-    public function appendFacultyToSheet($faculty, $sheetName = 'Faculty')
-    {
-        $values = [];
-        foreach ($faculty as $member) {
-            $values[] = [
-                $member->faculty_id ?? '',
-                $member->f_name ?? '',
-                $member->m_name ?? '',
-                $member->l_name ?? '',
-                $member->suffix ?? '',
-                $member->date_of_birth ?? '',
-                $this->resolveAge($member->date_of_birth ?? null, $member->age ?? null),
-                $member->sex ?? '',
-                $member->phone_number ?? '',
-                $member->email_address ?? '',
-                $member->address ?? '',
-                $member->region ?? '',
-                $member->province ?? '',
-                $member->municipality ?? '',
-                $member->position ?? '',
-                $member->status ?? '',
-                $member->department_id ?? '',
-                $member->created_at ? date('Y-m-d', strtotime($member->created_at)) : '',
-                $member->updated_at ? date('Y-m-d', strtotime($member->updated_at)) : '',
-                $member->archived_at ? date('Y-m-d', strtotime($member->archived_at)) : '',
-            ];
-        }
-
-        $body = new \Google\Service\Sheets\ValueRange(['values' => $values]);
-        $params = ['valueInputOption' => 'RAW', 'insertDataOption' => 'INSERT_ROWS'];
-        $this->service->spreadsheets_values->append(
-            $this->spreadsheetId,
-            $sheetName . '!A1',
-            $body,
-            $params
-        );
-    }
-
     private function ensureSheetExists(string $sheetName): void
     {
         try {
@@ -314,7 +237,7 @@ class GoogleSheetsExportService
         try {
             $this->service->spreadsheets_values->clear(
                 $this->spreadsheetId,
-                $sheetName,
+                $this->buildRange($sheetName),
                 new ClearValuesRequest()
             );
         } catch (\Exception $e) {
@@ -340,7 +263,7 @@ class GoogleSheetsExportService
         try {
             $this->service->spreadsheets_values->update(
                 $this->spreadsheetId,
-                $sheetName . '!A1',
+                $this->buildRange($sheetName, 'A1'),
                 $body,
                 $params
             );
@@ -352,19 +275,65 @@ class GoogleSheetsExportService
         }
     }
 
-    public function getSpreadsheetId()
+    private function listSheetTitles(string $spreadsheetId): array
     {
-        return $this->spreadsheetId;
+        try {
+            $spreadsheet = $this->service->spreadsheets->get($spreadsheetId);
+        } catch (\Exception $e) {
+            Log::error('Unable to list sheet titles for import.', [
+                'spreadsheet_id' => $spreadsheetId,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+
+        return array_map(
+            fn ($sheet) => $sheet->getProperties()->getTitle(),
+            $spreadsheet->getSheets() ?? []
+        );
     }
 
-    public function importStudentsFromSheet($spreadsheetId)
+    private function resolveSheetForImport(string $spreadsheetId, string $preferredSheet): string
+    {
+        $preferredSheet = trim($preferredSheet);
+        $fallbackSheet = 'Students';
+
+        $candidates = array_values(array_unique(array_filter([
+            $preferredSheet,
+            $fallbackSheet,
+        ], fn ($value) => $value !== '')));
+
+        $available = $this->listSheetTitles($spreadsheetId);
+
+        foreach ($candidates as $candidate) {
+            if (in_array($candidate, $available, true)) {
+                return $candidate;
+            }
+        }
+
+        throw new \RuntimeException('None of the expected sheet tabs were found in the specified spreadsheet.');
+    }
+
+    private function buildRange(string $sheetName, ?string $rangePart = null): string
+    {
+        $trimmed = trim($sheetName);
+        if ($trimmed === '') {
+            throw new \InvalidArgumentException('Sheet name cannot be empty.');
+        }
+
+        $escaped = str_replace("'", "''", $trimmed);
+        return "'{$escaped}'" . ($rangePart ? "!{$rangePart}" : '');
+    }
+
+    public function importStudentsFromSheet($spreadsheetId, ?string $sheetName = null)
     {
         if (!$spreadsheetId) {
             throw new \Exception("Spreadsheet ID is required");
         }
 
         $service = $this->service;
-        $range = 'Students!A2:V';
+        $resolvedSheet = $this->resolveSheetForImport($spreadsheetId, $sheetName ?? $this->sheetName ?? 'Students');
+        $range = $this->buildRange($resolvedSheet, 'A2:V');
 
         $response = $service->spreadsheets_values->get($spreadsheetId, $range);
         $rows = $response->getValues();

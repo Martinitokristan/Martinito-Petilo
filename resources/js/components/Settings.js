@@ -128,7 +128,7 @@ function Settings() {
                 if (isEditing) {
                     await axios.put(
                         `/api/admin/courses/${selectedItem.course_id}`,
-                        payload
+                        payload,
                     );
                 } else {
                     await axios.post("/api/admin/courses", payload);
@@ -141,7 +141,7 @@ function Settings() {
                 if (isEditing) {
                     await axios.put(
                         `/api/admin/departments/${selectedItem.department_id}`,
-                        payload
+                        payload,
                     );
                 } else {
                     await axios.post("/api/admin/departments", payload);
@@ -154,7 +154,7 @@ function Settings() {
                 if (isEditing) {
                     await axios.put(
                         `/api/admin/academic-years/${selectedItem.academic_year_id}`,
-                        payload
+                        payload,
                     );
                 } else {
                     await axios.post("/api/admin/academic-years", payload);
@@ -166,7 +166,7 @@ function Settings() {
             setError(
                 error.response?.data?.message ||
                     error.message ||
-                    "Failed to save"
+                    "Failed to save",
             );
             if (
                 error.response?.status === 401 ||
@@ -187,14 +187,14 @@ function Settings() {
                 active === "courses"
                     ? "Course"
                     : active === "departments"
-                    ? "Department"
-                    : "Academic Year";
+                      ? "Department"
+                      : "Academic Year";
             setModalMessage(`${itemType} has been successfully archived.`);
             setModalState("success");
             setShowModal(true);
         } catch (error) {
             setModalMessage(
-                error.response?.data?.message || "Failed to archive"
+                error.response?.data?.message || "Failed to archive",
             );
             setModalState("error");
             setShowModal(true);
@@ -242,7 +242,7 @@ function Settings() {
             params.set("type", archiveType);
 
             const res = await axios.get(
-                "/api/admin/archived?" + params.toString()
+                "/api/admin/archived?" + params.toString(),
             );
             setArchivedItems(res.data.items || []);
         } catch (err) {
@@ -269,7 +269,7 @@ function Settings() {
             setShowModal(true);
         } catch (error) {
             setModalMessage(
-                error.response?.data?.message || "Failed to restore item"
+                error.response?.data?.message || "Failed to restore item",
             );
             setModalState("error");
             setShowModal(true);
@@ -279,7 +279,7 @@ function Settings() {
     const handlePermanentDelete = async (item) => {
         if (
             !confirm(
-                "Are you sure you want to permanently delete this item? This action cannot be undone!"
+                "Are you sure you want to permanently delete this item? This action cannot be undone!",
             )
         )
             return;
@@ -299,7 +299,7 @@ function Settings() {
             setShowModal(true);
         } catch (error) {
             setModalMessage(
-                error.response?.data?.message || "Failed to delete item"
+                error.response?.data?.message || "Failed to delete item",
             );
             setModalState("error");
             setShowModal(true);
@@ -337,11 +337,12 @@ function Settings() {
                                 className="btn btn-primary new-btn"
                                 onClick={() => onOpenForm()}
                             >
-                                Add {active === "courses"
+                                Add{" "}
+                                {active === "courses"
                                     ? "Course"
                                     : active === "departments"
-                                    ? "Department"
-                                    : "Academic Year"}
+                                      ? "Department"
+                                      : "Academic Year"}
                             </button>
                         )}
                     </header>
@@ -358,7 +359,7 @@ function Settings() {
                                     setActive("courses");
                                     localStorage.setItem(
                                         "settings_active_tab",
-                                        "courses"
+                                        "courses",
                                     );
                                 }}
                             >
@@ -372,7 +373,7 @@ function Settings() {
                                     setActive("departments");
                                     localStorage.setItem(
                                         "settings_active_tab",
-                                        "departments"
+                                        "departments",
                                     );
                                 }}
                             >
@@ -386,7 +387,7 @@ function Settings() {
                                     setActive("academic-years");
                                     localStorage.setItem(
                                         "settings_active_tab",
-                                        "academic-years"
+                                        "academic-years",
                                     );
                                 }}
                             >
@@ -400,7 +401,7 @@ function Settings() {
                                     setActive("archive");
                                     localStorage.setItem(
                                         "settings_active_tab",
-                                        "archive"
+                                        "archive",
                                     );
                                 }}
                             >
@@ -426,7 +427,8 @@ function Settings() {
                                                     <td>{c.course_name}</td>
                                                     <td>
                                                         {c.department
-                                                            ?.department_name || "-"}
+                                                            ?.department_name ||
+                                                            "-"}
                                                     </td>
                                                     <td>
                                                         <button
@@ -441,7 +443,7 @@ function Settings() {
                                                             className="btn btn-success btn-sm"
                                                             onClick={() =>
                                                                 handleDelete(
-                                                                    c.course_id
+                                                                    c.course_id,
                                                                 )
                                                             }
                                                         >
@@ -470,7 +472,10 @@ function Settings() {
                                             {departments.map((d) => (
                                                 <tr key={d.department_id}>
                                                     <td>{d.department_name}</td>
-                                                    <td>{d.department_head || "-"}</td>
+                                                    <td>
+                                                        {d.department_head ||
+                                                            "-"}
+                                                    </td>
                                                     <td>
                                                         <button
                                                             className="btn btn-light"
@@ -484,7 +489,7 @@ function Settings() {
                                                             className="btn btn-success btn-sm"
                                                             onClick={() =>
                                                                 handleDelete(
-                                                                    d.department_id
+                                                                    d.department_id,
                                                                 )
                                                             }
                                                         >
@@ -525,7 +530,7 @@ function Settings() {
                                                             className="btn btn-success btn-sm"
                                                             onClick={() =>
                                                                 handleDelete(
-                                                                    a.academic_year_id
+                                                                    a.academic_year_id,
                                                                 )
                                                             }
                                                         >
@@ -562,7 +567,9 @@ function Settings() {
                                             <select
                                                 value={archiveType}
                                                 onChange={(e) => {
-                                                    setArchiveType(e.target.value);
+                                                    setArchiveType(
+                                                        e.target.value,
+                                                    );
                                                     setArchiveFilters({
                                                         search: "",
                                                         department_id: "",
@@ -578,12 +585,18 @@ function Settings() {
                                                     height: "40px",
                                                 }}
                                             >
-                                                <option value="all">All Types</option>
+                                                <option value="all">
+                                                    All Types
+                                                </option>
                                                 <option value="students">
                                                     Students
                                                 </option>
-                                                <option value="faculty">Faculty</option>
-                                                <option value="courses">Courses</option>
+                                                <option value="faculty">
+                                                    Faculty
+                                                </option>
+                                                <option value="courses">
+                                                    Courses
+                                                </option>
                                                 <option value="departments">
                                                     Departments
                                                 </option>
@@ -595,15 +608,21 @@ function Settings() {
 
                                         <div
                                             className="control-item"
-                                            style={{ flex: "0 0 auto", width: "320px" }}
+                                            style={{
+                                                flex: "0 0 auto",
+                                                width: "320px",
+                                            }}
                                         >
-                                            <div style={{ position: "relative" }}>
+                                            <div
+                                                style={{ position: "relative" }}
+                                            >
                                                 <BsSearch
                                                     style={{
                                                         position: "absolute",
                                                         left: "12px",
                                                         top: "50%",
-                                                        transform: "translateY(-50%)",
+                                                        transform:
+                                                            "translateY(-50%)",
                                                         color: "#666",
                                                         pointerEvents: "none",
                                                     }}
@@ -615,16 +634,20 @@ function Settings() {
                                                             ? "items"
                                                             : archiveType
                                                     }...`}
-                                                    value={archiveFilters.search}
+                                                    value={
+                                                        archiveFilters.search
+                                                    }
                                                     onChange={(e) =>
                                                         setArchiveFilters({
                                                             ...archiveFilters,
-                                                            search: e.target.value,
+                                                            search: e.target
+                                                                .value,
                                                         })
                                                     }
                                                     style={{
                                                         width: "100%",
-                                                        padding: "8px 12px 8px 38px",
+                                                        padding:
+                                                            "8px 12px 8px 38px",
                                                         border: "1px solid #ddd",
                                                         borderRadius: "6px",
                                                         height: "40px",
@@ -644,7 +667,9 @@ function Settings() {
                                                 }}
                                             >
                                                 <select
-                                                    value={archiveFilters.department_id}
+                                                    value={
+                                                        archiveFilters.department_id
+                                                    }
                                                     onChange={(e) =>
                                                         setArchiveFilters({
                                                             ...archiveFilters,
@@ -666,8 +691,12 @@ function Settings() {
                                                     </option>
                                                     {departments.map((d) => (
                                                         <option
-                                                            key={d.department_id}
-                                                            value={d.department_id}
+                                                            key={
+                                                                d.department_id
+                                                            }
+                                                            value={
+                                                                d.department_id
+                                                            }
                                                         >
                                                             {d.department_name}
                                                         </option>
@@ -685,11 +714,14 @@ function Settings() {
                                                 }}
                                             >
                                                 <select
-                                                    value={archiveFilters.course_id}
+                                                    value={
+                                                        archiveFilters.course_id
+                                                    }
                                                     onChange={(e) =>
                                                         setArchiveFilters({
                                                             ...archiveFilters,
-                                                            course_id: e.target.value,
+                                                            course_id:
+                                                                e.target.value,
                                                         })
                                                     }
                                                     style={{
@@ -709,13 +741,17 @@ function Settings() {
                                                                 !archiveFilters.department_id ||
                                                                 c.department_id ===
                                                                     parseInt(
-                                                                        archiveFilters.department_id
-                                                                    )
+                                                                        archiveFilters.department_id,
+                                                                    ),
                                                         )
                                                         .map((c) => (
                                                             <option
-                                                                key={c.course_id}
-                                                                value={c.course_id}
+                                                                key={
+                                                                    c.course_id
+                                                                }
+                                                                value={
+                                                                    c.course_id
+                                                                }
                                                             >
                                                                 {c.course_name}
                                                             </option>
@@ -756,8 +792,12 @@ function Settings() {
                                                     </option>
                                                     {academicYears.map((a) => (
                                                         <option
-                                                            key={a.academic_year_id}
-                                                            value={a.academic_year_id}
+                                                            key={
+                                                                a.academic_year_id
+                                                            }
+                                                            value={
+                                                                a.academic_year_id
+                                                            }
                                                         >
                                                             {a.school_year}
                                                         </option>
@@ -788,7 +828,8 @@ function Settings() {
                                                         <th>Archived At</th>
                                                         <th
                                                             style={{
-                                                                textAlign: "center",
+                                                                textAlign:
+                                                                    "center",
                                                             }}
                                                         >
                                                             Actions
@@ -796,87 +837,102 @@ function Settings() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {archivedItems.map((item, index) => (
-                                                        <tr
-                                                            key={`${item._type}-${
-                                                                item._id || index
-                                                            }`}
-                                                        >
-                                                            <td
-                                                                style={{
-                                                                    textTransform:
-                                                                        "capitalize",
-                                                                }}
+                                                    {archivedItems.map(
+                                                        (item, index) => (
+                                                            <tr
+                                                                key={`${item._type}-${
+                                                                    item._id ||
+                                                                    index
+                                                                }`}
                                                             >
-                                                                {item._type?.replace(
-                                                                    "_",
-                                                                    " "
-                                                                )}
-                                                            </td>
-                                                            <td>{item._label}</td>
-                                                            <td>
-                                                                {item._department ||
-                                                                    item._course ||
-                                                                    "-"}
-                                                            </td>
-                                                            <td>
-                                                                {item.archived_at
-                                                                    ? new Date(
-                                                                          item.archived_at
-                                                                      ).toLocaleDateString()
-                                                                    : "-"}
-                                                            </td>
-                                                            <td
-                                                                style={{
-                                                                    textAlign:
-                                                                        "center",
-                                                                }}
-                                                            >
-                                                                <div
+                                                                <td
                                                                     style={{
-                                                                        display: "flex",
-                                                                        gap: "8px",
-                                                                        justifyContent: "center",
+                                                                        textTransform:
+                                                                            "capitalize",
                                                                     }}
                                                                 >
-                                                                    <button
-                                                                        className="btn"
+                                                                    {item._type?.replace(
+                                                                        "_",
+                                                                        " ",
+                                                                    )}
+                                                                </td>
+                                                                <td>
+                                                                    {
+                                                                        item._label
+                                                                    }
+                                                                </td>
+                                                                <td>
+                                                                    {item._department ||
+                                                                        item._course ||
+                                                                        "-"}
+                                                                </td>
+                                                                <td>
+                                                                    {item.archived_at
+                                                                        ? new Date(
+                                                                              item.archived_at,
+                                                                          ).toLocaleDateString()
+                                                                        : "-"}
+                                                                </td>
+                                                                <td
+                                                                    style={{
+                                                                        textAlign:
+                                                                            "center",
+                                                                    }}
+                                                                >
+                                                                    <div
                                                                         style={{
-                                                                            backgroundColor: "#fbbf24",
-                                                                            color: "#111827",
-                                                                            border: "1px solid #fbbf24",
-                                                                            padding: "8px 14px",
-                                                                            borderRadius: "6px",
+                                                                            display:
+                                                                                "flex",
+                                                                            gap: "8px",
+                                                                            justifyContent:
+                                                                                "center",
                                                                         }}
-                                                                        onClick={() =>
-                                                                            handleRestore(
-                                                                                item
-                                                                            )
-                                                                        }
                                                                     >
-                                                                        Restore
-                                                                    </button>
-                                                                    <button
-                                                                        className="btn"
-                                                                        style={{
-                                                                            backgroundColor: "#dc2626",
-                                                                            color: "white",
-                                                                            border: "1px solid #dc2626",
-                                                                            padding: "8px 14px",
-                                                                            borderRadius: "6px",
-                                                                        }}
-                                                                        onClick={() =>
-                                                                            handlePermanentDelete(
-                                                                                item
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        Delete
-                                                                    </button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
+                                                                        <button
+                                                                            className="btn"
+                                                                            style={{
+                                                                                backgroundColor:
+                                                                                    "#fbbf24",
+                                                                                color: "#111827",
+                                                                                border: "1px solid #fbbf24",
+                                                                                padding:
+                                                                                    "8px 14px",
+                                                                                borderRadius:
+                                                                                    "6px",
+                                                                            }}
+                                                                            onClick={() =>
+                                                                                handleRestore(
+                                                                                    item,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            Restore
+                                                                        </button>
+                                                                        <button
+                                                                            className="btn"
+                                                                            style={{
+                                                                                backgroundColor:
+                                                                                    "#dc2626",
+                                                                                color: "white",
+                                                                                border: "1px solid #dc2626",
+                                                                                padding:
+                                                                                    "8px 14px",
+                                                                                borderRadius:
+                                                                                    "6px",
+                                                                            }}
+                                                                            onClick={() =>
+                                                                                handlePermanentDelete(
+                                                                                    item,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            Delete
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ),
+                                                    )}
                                                 </tbody>
                                             </table>
                                         )}
@@ -889,10 +945,17 @@ function Settings() {
                                 <div className="modal-overlay">
                                     <div className="modal-card">
                                         <h3>
-                                            {isEditing ? "Edit Course" : "Add Course"}
+                                            {isEditing
+                                                ? "Edit Course"
+                                                : "Add Course"}
                                         </h3>
                                         <form onSubmit={onSubmit}>
-                                            <div style={{ display: "grid", gap: 14 }}>
+                                            <div
+                                                style={{
+                                                    display: "grid",
+                                                    gap: 14,
+                                                }}
+                                            >
                                                 <div>
                                                     <label>Course Name</label>
                                                     <input
@@ -901,7 +964,9 @@ function Settings() {
                                                         onChange={(e) =>
                                                             setForm({
                                                                 ...form,
-                                                                course_name: e.target.value,
+                                                                course_name:
+                                                                    e.target
+                                                                        .value,
                                                             })
                                                         }
                                                         required
@@ -911,27 +976,41 @@ function Settings() {
                                                     <label>Department</label>
                                                     <select
                                                         className="form-input"
-                                                        value={form.department_id}
+                                                        value={
+                                                            form.department_id
+                                                        }
                                                         onChange={(e) =>
                                                             setForm({
                                                                 ...form,
                                                                 department_id:
-                                                                    e.target.value,
+                                                                    e.target
+                                                                        .value,
                                                             })
                                                         }
                                                         required
                                                     >
-                                                        <option value="" disabled>
+                                                        <option
+                                                            value=""
+                                                            disabled
+                                                        >
                                                             Select department
                                                         </option>
-                                                        {departments.map((d) => (
-                                                            <option
-                                                                key={d.department_id}
-                                                                value={d.department_id}
-                                                            >
-                                                                {d.department_name}
-                                                            </option>
-                                                        ))}
+                                                        {departments.map(
+                                                            (d) => (
+                                                                <option
+                                                                    key={
+                                                                        d.department_id
+                                                                    }
+                                                                    value={
+                                                                        d.department_id
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        d.department_name
+                                                                    }
+                                                                </option>
+                                                            ),
+                                                        )}
                                                     </select>
                                                 </div>
                                             </div>
@@ -946,7 +1025,9 @@ function Settings() {
                                                 <button
                                                     className="btn"
                                                     type="button"
-                                                    onClick={() => setShowForm(false)}
+                                                    onClick={() =>
+                                                        setShowForm(false)
+                                                    }
                                                 >
                                                     Cancel
                                                 </button>
@@ -968,22 +1049,34 @@ function Settings() {
                                 <div className="modal-overlay">
                                     <div className="modal-card">
                                         <h3>
-                                            {isEditing ? "Edit Department" : "Add Department"}
+                                            {isEditing
+                                                ? "Edit Department"
+                                                : "Add Department"}
                                         </h3>
                                         <form onSubmit={onSubmit}>
-                                            <div style={{ display: "grid", gap: 14 }}>
+                                            <div
+                                                style={{
+                                                    display: "grid",
+                                                    gap: 14,
+                                                }}
+                                            >
                                                 <div>
-                                                    <label>Department Name</label>
+                                                    <label>
+                                                        Department Name
+                                                    </label>
                                                     <input
                                                         className="form-input"
                                                         placeholder="Department Name"
                                                         name="department_name"
-                                                        value={form.department_name}
+                                                        value={
+                                                            form.department_name
+                                                        }
                                                         onChange={(e) =>
                                                             setForm({
                                                                 ...form,
                                                                 department_name:
-                                                                    e.target.value,
+                                                                    e.target
+                                                                        .value,
                                                             })
                                                         }
                                                         required
@@ -1001,7 +1094,9 @@ function Settings() {
                                                 <button
                                                     className="btn"
                                                     type="button"
-                                                    onClick={() => setShowForm(false)}
+                                                    onClick={() =>
+                                                        setShowForm(false)
+                                                    }
                                                 >
                                                     Cancel
                                                 </button>
@@ -1028,7 +1123,12 @@ function Settings() {
                                                 : "Add Academic Year"}
                                         </h3>
                                         <form onSubmit={onSubmit}>
-                                            <div style={{ display: "grid", gap: 14 }}>
+                                            <div
+                                                style={{
+                                                    display: "grid",
+                                                    gap: 14,
+                                                }}
+                                            >
                                                 <div>
                                                     <label>School Year</label>
                                                     <input
@@ -1038,7 +1138,8 @@ function Settings() {
                                                             setForm({
                                                                 ...form,
                                                                 school_year:
-                                                                    e.target.value,
+                                                                    e.target
+                                                                        .value,
                                                             })
                                                         }
                                                         required
@@ -1056,7 +1157,9 @@ function Settings() {
                                                 <button
                                                     className="btn"
                                                     type="button"
-                                                    onClick={() => setShowForm(false)}
+                                                    onClick={() =>
+                                                        setShowForm(false)
+                                                    }
                                                 >
                                                     Cancel
                                                 </button>
@@ -1125,7 +1228,9 @@ function Settings() {
                                                         />
                                                     </svg>
                                                 </div>
-                                                <h4 className="error-title">Error!</h4>
+                                                <h4 className="error-title">
+                                                    Error!
+                                                </h4>
                                                 <p className="error-subtitle">
                                                     {modalMessage}
                                                 </p>

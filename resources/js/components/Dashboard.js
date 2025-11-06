@@ -47,7 +47,10 @@ function Dashboard() {
             } catch (error) {
                 setError("Error loading dashboard data");
                 console.error("Error:", error);
-                if (error.response?.status === 401 || error.response?.status === 403) {
+                if (
+                    error.response?.status === 401 ||
+                    error.response?.status === 403
+                ) {
                     window.location.href = "/login";
                 }
             } finally {
@@ -83,7 +86,9 @@ function Dashboard() {
 
             <section className="stats-cards">
                 <div className="stat-card purple">
-                    <div className="stat-icon"><GraduationCap size={24} /></div>
+                    <div className="stat-icon">
+                        <GraduationCap size={24} />
+                    </div>
                     <div className="stat-info">
                         <div className="stat-label">Students</div>
                         <div className="stat-value">{stats.total_students}</div>
@@ -91,7 +96,9 @@ function Dashboard() {
                 </div>
 
                 <div className="stat-card orange">
-                    <div className="stat-icon"><Users size={24} /></div>
+                    <div className="stat-icon">
+                        <Users size={24} />
+                    </div>
                     <div className="stat-info">
                         <div className="stat-label">Faculty</div>
                         <div className="stat-value">{stats.total_faculty}</div>
@@ -99,15 +106,21 @@ function Dashboard() {
                 </div>
 
                 <div className="stat-card yellow">
-                    <div className="stat-icon"><Building size={24} /></div>
+                    <div className="stat-icon">
+                        <Building size={24} />
+                    </div>
                     <div className="stat-info">
                         <div className="stat-label">Department</div>
-                        <div className="stat-value">{stats.total_departments}</div>
+                        <div className="stat-value">
+                            {stats.total_departments}
+                        </div>
                     </div>
                 </div>
 
                 <div className="stat-card navy">
-                    <div className="stat-icon"><BookOpen size={24} /></div>
+                    <div className="stat-icon">
+                        <BookOpen size={24} />
+                    </div>
                     <div className="stat-info">
                         <div className="stat-label">Courses</div>
                         <div className="stat-value">{stats.total_courses}</div>
@@ -143,10 +156,14 @@ function Dashboard() {
                     <ResponsiveContainer width="100%" height={350}>
                         <PieChart>
                             <Pie
-                                data={stats.faculty_by_department.map((item) => ({
-                                    ...item,
-                                    label: extractAcronym(item.label) || item.label,
-                                }))}
+                                data={stats.faculty_by_department.map(
+                                    (item) => ({
+                                        ...item,
+                                        label:
+                                            extractAcronym(item.label) ||
+                                            item.label,
+                                    }),
+                                )}
                                 cx="50%"
                                 cy="50%"
                                 labelLine={false}

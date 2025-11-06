@@ -41,14 +41,23 @@ function Faculty() {
     const [municipalities, setMunicipalities] = useState([]);
     const [selectedRegionCode, setSelectedRegionCode] = useState("");
     const [selectedProvinceCode, setSelectedProvinceCode] = useState("");
-    const [selectedMunicipalityCode, setSelectedMunicipalityCode] = useState("");
+    const [selectedMunicipalityCode, setSelectedMunicipalityCode] =
+        useState("");
     const [emailWarning, setEmailWarning] = useState("");
 
     const getItemCode = (item = {}) =>
-        item?.code || item?.psgcCode || item?.id || item?.regionCode || item?.provinceCode || item?.cityCode || item?.munCode;
+        item?.code ||
+        item?.psgcCode ||
+        item?.id ||
+        item?.regionCode ||
+        item?.provinceCode ||
+        item?.cityCode ||
+        item?.munCode;
     const getRegionName = (item = {}) => item?.regionName || item?.name || "";
-    const getProvinceName = (item = {}) => item?.name || item?.provinceName || "";
-    const getMunicipalityName = (item = {}) => item?.name || item?.cityName || item?.municipalityName || "";
+    const getProvinceName = (item = {}) =>
+        item?.name || item?.provinceName || "";
+    const getMunicipalityName = (item = {}) =>
+        item?.name || item?.cityName || item?.municipalityName || "";
 
     const loadFaculty = async () => {
         try {
@@ -98,7 +107,9 @@ function Faculty() {
             return [];
         }
         try {
-            const response = await axios.get(`/api/admin/locations/regions/${code}/provinces`);
+            const response = await axios.get(
+                `/api/admin/locations/regions/${code}/provinces`,
+            );
             const list = response.data || [];
             setProvinces(list);
             return list;
@@ -115,7 +126,9 @@ function Faculty() {
             return [];
         }
         try {
-            const response = await axios.get(`/api/admin/locations/provinces/${code}/municipalities`);
+            const response = await axios.get(
+                `/api/admin/locations/provinces/${code}/municipalities`,
+            );
             const list = response.data || [];
             setMunicipalities(list);
             return list;
@@ -182,7 +195,7 @@ function Faculty() {
             (member) =>
                 member.email_address &&
                 normalizeEmail(member.email_address) === normalized &&
-                member.faculty_id !== currentId
+                member.faculty_id !== currentId,
         );
         setEmailWarning(duplicate ? "Email already exists." : "");
         return duplicate;
@@ -195,7 +208,10 @@ function Faculty() {
         const today = new Date();
         let age = today.getFullYear() - birth.getFullYear();
         const monthDiff = today.getMonth() - birth.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        if (
+            monthDiff < 0 ||
+            (monthDiff === 0 && today.getDate() < birth.getDate())
+        ) {
             age -= 1;
         }
         return age < 0 ? "" : age;
@@ -246,7 +262,9 @@ function Faculty() {
 
     const handleMunicipalityChange = (code) => {
         setSelectedMunicipalityCode(code);
-        const selected = municipalities.find((item) => getItemCode(item) === code);
+        const selected = municipalities.find(
+            (item) => getItemCode(item) === code,
+        );
         const municipalityName = getMunicipalityName(selected);
         setFormData((prev) => ({
             ...prev,
@@ -258,7 +276,8 @@ function Faculty() {
         const normalized = (targetName || "").trim().toLowerCase();
         if (!normalized) return "";
         const match = items.find(
-            (item) => (nameGetter(item) || "").trim().toLowerCase() === normalized
+            (item) =>
+                (nameGetter(item) || "").trim().toLowerCase() === normalized,
         );
         return match ? getItemCode(match) : "";
     };
@@ -296,7 +315,7 @@ function Faculty() {
             if (editingId) {
                 response = await axios.put(
                     `/api/admin/faculty/${editingId}`,
-                    payload
+                    payload,
                 );
             } else {
                 response = await axios.post("/api/admin/faculty", payload);
@@ -325,7 +344,7 @@ function Faculty() {
             setModalMessage(
                 error.response?.data?.error ||
                     error.response?.data?.message ||
-                    "Failed to save faculty"
+                    "Failed to save faculty",
             );
             if ([401, 403].includes(error.response?.status)) {
                 window.location.href = "/login";
@@ -343,7 +362,7 @@ function Faculty() {
         } catch (error) {
             console.error("Archive error:", error);
             setModalMessage(
-                error.response?.data?.message || "Failed to archive faculty"
+                error.response?.data?.message || "Failed to archive faculty",
             );
             setModalContentState("error");
             setShowForm(true);
@@ -377,17 +396,29 @@ function Faculty() {
         setShowForm(true);
         setModalContentState("form");
 
-        const regionCode = findCodeByName(regions, facultyMember.region, getRegionName);
+        const regionCode = findCodeByName(
+            regions,
+            facultyMember.region,
+            getRegionName,
+        );
         setSelectedRegionCode(regionCode);
 
         if (regionCode) {
             const provinceList = await loadProvinces(regionCode);
-            const provinceCode = findCodeByName(provinceList, facultyMember.province, getProvinceName);
+            const provinceCode = findCodeByName(
+                provinceList,
+                facultyMember.province,
+                getProvinceName,
+            );
             setSelectedProvinceCode(provinceCode);
 
             if (provinceCode) {
                 const municipalityList = await loadMunicipalities(provinceCode);
-                const municipalityCode = findCodeByName(municipalityList, facultyMember.municipality, getMunicipalityName);
+                const municipalityCode = findCodeByName(
+                    municipalityList,
+                    facultyMember.municipality,
+                    getMunicipalityName,
+                );
                 setSelectedMunicipalityCode(municipalityCode);
             } else {
                 setMunicipalities([]);
@@ -645,7 +676,9 @@ function Faculty() {
                         <label className="form-label-new">Email</label>
                         <div className="input-with-error">
                             {emailWarning && (
-                                <span className="inline-error">{emailWarning}</span>
+                                <span className="inline-error">
+                                    {emailWarning}
+                                </span>
                             )}
                             <input
                                 className={`form-input-new ${
@@ -671,7 +704,10 @@ function Faculty() {
                                 <option value="">Select Region</option>
                             )}
                             {regions.map((region) => (
-                                <option key={getItemCode(region)} value={getItemCode(region)}>
+                                <option
+                                    key={getItemCode(region)}
+                                    value={getItemCode(region)}
+                                >
                                     {getRegionName(region)}
                                 </option>
                             ))}
@@ -681,33 +717,52 @@ function Faculty() {
                         <select
                             className="form-input-new"
                             value={selectedProvinceCode}
-                            onChange={(e) => handleProvinceChange(e.target.value)}
+                            onChange={(e) =>
+                                handleProvinceChange(e.target.value)
+                            }
                             required
-                            disabled={!selectedRegionCode || provinces.length === 0}
+                            disabled={
+                                !selectedRegionCode || provinces.length === 0
+                            }
                         >
                             {!selectedProvinceCode && (
                                 <option value="">Select Province</option>
                             )}
                             {provinces.map((province) => (
-                                <option key={getItemCode(province)} value={getItemCode(province)}>
+                                <option
+                                    key={getItemCode(province)}
+                                    value={getItemCode(province)}
+                                >
                                     {getProvinceName(province)}
                                 </option>
                             ))}
                         </select>
 
-                        <label className="form-label-new">Municipality / City</label>
+                        <label className="form-label-new">
+                            Municipality / City
+                        </label>
                         <select
                             className="form-input-new"
                             value={selectedMunicipalityCode}
-                            onChange={(e) => handleMunicipalityChange(e.target.value)}
+                            onChange={(e) =>
+                                handleMunicipalityChange(e.target.value)
+                            }
                             required
-                            disabled={!selectedProvinceCode || municipalities.length === 0}
+                            disabled={
+                                !selectedProvinceCode ||
+                                municipalities.length === 0
+                            }
                         >
                             {!selectedMunicipalityCode && (
-                                <option value="">Select Municipality / City</option>
+                                <option value="">
+                                    Select Municipality / City
+                                </option>
                             )}
                             {municipalities.map((municipality) => (
-                                <option key={getItemCode(municipality)} value={getItemCode(municipality)}>
+                                <option
+                                    key={getItemCode(municipality)}
+                                    value={getItemCode(municipality)}
+                                >
                                     {getMunicipalityName(municipality)}
                                 </option>
                             ))}
@@ -811,7 +866,10 @@ function Faculty() {
                             className="filter"
                             value={filters.department_id}
                             onChange={(e) =>
-                                handleFilterChange("department_id", e.target.value)
+                                handleFilterChange(
+                                    "department_id",
+                                    e.target.value,
+                                )
                             }
                             style={{ minWidth: 180 }}
                         >
@@ -847,7 +905,12 @@ function Faculty() {
                                     }${f.l_name}${
                                         f.suffix ? ", " + f.suffix : ""
                                     }`}</td>
-                                    <td>{formatWithAcronym(f.department?.department_name || "-")}</td>
+                                    <td>
+                                        {formatWithAcronym(
+                                            f.department?.department_name ||
+                                                "-",
+                                        )}
+                                    </td>
                                     <td>{f.position || "-"}</td>
                                     <td>
                                         <span

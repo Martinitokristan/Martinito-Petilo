@@ -59,13 +59,22 @@ function Students() {
     const [municipalities, setMunicipalities] = useState([]);
     const [selectedRegionCode, setSelectedRegionCode] = useState("");
     const [selectedProvinceCode, setSelectedProvinceCode] = useState("");
-    const [selectedMunicipalityCode, setSelectedMunicipalityCode] = useState("");
+    const [selectedMunicipalityCode, setSelectedMunicipalityCode] =
+        useState("");
 
     const getItemCode = (item = {}) =>
-        item?.code || item?.psgcCode || item?.id || item?.regionCode || item?.provinceCode || item?.cityCode || item?.munCode;
+        item?.code ||
+        item?.psgcCode ||
+        item?.id ||
+        item?.regionCode ||
+        item?.provinceCode ||
+        item?.cityCode ||
+        item?.munCode;
     const getRegionName = (item = {}) => item?.regionName || item?.name || "";
-    const getProvinceName = (item = {}) => item?.name || item?.provinceName || "";
-    const getMunicipalityName = (item = {}) => item?.name || item?.cityName || item?.municipalityName || "";
+    const getProvinceName = (item = {}) =>
+        item?.name || item?.provinceName || "";
+    const getMunicipalityName = (item = {}) =>
+        item?.name || item?.cityName || item?.municipalityName || "";
 
     const loadProvinces = async (code) => {
         if (!code) {
@@ -73,7 +82,9 @@ function Students() {
             return [];
         }
         try {
-            const res = await axios.get(`/api/admin/locations/regions/${code}/provinces`);
+            const res = await axios.get(
+                `/api/admin/locations/regions/${code}/provinces`,
+            );
             const list = res.data || [];
             setProvinces(list);
             return list;
@@ -90,7 +101,9 @@ function Students() {
             return [];
         }
         try {
-            const res = await axios.get(`/api/admin/locations/provinces/${code}/municipalities`);
+            const res = await axios.get(
+                `/api/admin/locations/provinces/${code}/municipalities`,
+            );
             const list = res.data || [];
             setMunicipalities(list);
             return list;
@@ -134,7 +147,9 @@ function Students() {
 
     const handleMunicipalityChange = (code) => {
         setSelectedMunicipalityCode(code);
-        const selected = municipalities.find((item) => getItemCode(item) === code);
+        const selected = municipalities.find(
+            (item) => getItemCode(item) === code,
+        );
         const municipalityName = getMunicipalityName(selected);
         setForm((prev) => ({
             ...prev,
@@ -171,7 +186,9 @@ function Students() {
             axios.get("/api/admin/courses").catch(() => ({ data: [] })),
             axios.get("/api/admin/departments").catch(() => ({ data: [] })),
             axios.get("/api/admin/academic-years").catch(() => ({ data: [] })),
-            axios.get("/api/admin/locations/regions").catch(() => ({ data: [] })),
+            axios
+                .get("/api/admin/locations/regions")
+                .catch(() => ({ data: [] })),
         ])
             .then(([coursesRes, deptsRes, yearsRes, regionsRes]) => {
                 setCourses(coursesRes.data || []);
@@ -208,7 +225,10 @@ function Students() {
         const today = new Date();
         let age = today.getFullYear() - birth.getFullYear();
         const monthDiff = today.getMonth() - birth.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        if (
+            monthDiff < 0 ||
+            (monthDiff === 0 && today.getDate() < birth.getDate())
+        ) {
             age -= 1;
         }
         return age < 0 ? "" : age;
@@ -232,7 +252,8 @@ function Students() {
         const normalized = (targetName || "").trim().toLowerCase();
         if (!normalized) return "";
         const match = items.find(
-            (item) => (nameGetter(item) || "").trim().toLowerCase() === normalized
+            (item) =>
+                (nameGetter(item) || "").trim().toLowerCase() === normalized,
         );
         return match ? getItemCode(match) : "";
     };
@@ -268,7 +289,11 @@ function Students() {
         setSelectedProvinceCode("");
         setSelectedMunicipalityCode("");
 
-        const regionCode = findCodeByName(regions, student.region, getRegionName);
+        const regionCode = findCodeByName(
+            regions,
+            student.region,
+            getRegionName,
+        );
         setSelectedRegionCode(regionCode);
 
         if (regionCode) {
@@ -276,7 +301,7 @@ function Students() {
             const provinceCode = findCodeByName(
                 provinceList,
                 student.province,
-                getProvinceName
+                getProvinceName,
             );
             setSelectedProvinceCode(provinceCode);
 
@@ -285,7 +310,7 @@ function Students() {
                 const municipalityCode = findCodeByName(
                     municipalityList,
                     student.municipality,
-                    getMunicipalityName
+                    getMunicipalityName,
                 );
                 setSelectedMunicipalityCode(municipalityCode);
             } else {
@@ -311,7 +336,7 @@ function Students() {
             (student) =>
                 student.email_address &&
                 normalizeEmail(student.email_address) === normalized &&
-                student.student_id !== currentId
+                student.student_id !== currentId,
         );
         setEmailWarning(duplicate ? "Email already exists." : "");
         return duplicate;
@@ -341,7 +366,7 @@ function Students() {
             if (editingId) {
                 response = await axios.put(
                     `/api/admin/students/${editingId}`,
-                    payload
+                    payload,
                 );
             } else {
                 response = await axios.post("/api/admin/students", payload);
@@ -371,7 +396,7 @@ function Students() {
             setModalMessage(
                 err.response?.data?.error ||
                     err.response?.data?.message ||
-                    "Failed to save student"
+                    "Failed to save student",
             );
         }
     };
@@ -389,7 +414,7 @@ function Students() {
         } catch (err) {
             console.error("Archive error:", err);
             setModalMessage(
-                err.response?.data?.error || "Failed to archive student"
+                err.response?.data?.error || "Failed to archive student",
             );
             setModalContentState("error");
             setShowForm(true);
@@ -543,7 +568,7 @@ function Students() {
                                     const courseStillValid = courses.some(
                                         (c) =>
                                             c.course_id == prev.course_id &&
-                                            c.department_id == deptId
+                                            c.department_id == deptId,
                                     );
                                     return {
                                         ...prev,
@@ -582,10 +607,15 @@ function Students() {
                                     if (!form.department_id) {
                                         return true;
                                     }
-                                    return c.department_id == form.department_id;
+                                    return (
+                                        c.department_id == form.department_id
+                                    );
                                 })
                                 .map((c) => (
-                                    <option key={c.course_id} value={c.course_id}>
+                                    <option
+                                        key={c.course_id}
+                                        value={c.course_id}
+                                    >
                                         {formatWithAcronym(c.course_name)}
                                     </option>
                                 ))}
@@ -694,7 +724,9 @@ function Students() {
                         <label className="form-label-new">Email</label>
                         <div className="input-with-error">
                             {emailWarning && (
-                                <span className="inline-error">{emailWarning}</span>
+                                <span className="inline-error">
+                                    {emailWarning}
+                                </span>
                             )}
                             <input
                                 className={`form-input-new ${
@@ -702,7 +734,9 @@ function Students() {
                                 }`}
                                 placeholder="Email Address"
                                 value={form.email_address}
-                                onChange={(e) => handleEmailChange(e.target.value)}
+                                onChange={(e) =>
+                                    handleEmailChange(e.target.value)
+                                }
                                 required
                             />
                         </div>
@@ -771,7 +805,10 @@ function Students() {
                         >
                             <option value="">Select Region</option>
                             {regions.map((region) => (
-                                <option key={getItemCode(region)} value={getItemCode(region)}>
+                                <option
+                                    key={getItemCode(region)}
+                                    value={getItemCode(region)}
+                                >
                                     {getRegionName(region)}
                                 </option>
                             ))}
@@ -781,29 +818,46 @@ function Students() {
                         <select
                             className="form-input-new"
                             value={selectedProvinceCode}
-                            onChange={(e) => handleProvinceChange(e.target.value)}
+                            onChange={(e) =>
+                                handleProvinceChange(e.target.value)
+                            }
                             required
-                            disabled={!selectedRegionCode || provinces.length === 0}
+                            disabled={
+                                !selectedRegionCode || provinces.length === 0
+                            }
                         >
                             <option value="">Select Province</option>
                             {provinces.map((province) => (
-                                <option key={getItemCode(province)} value={getItemCode(province)}>
+                                <option
+                                    key={getItemCode(province)}
+                                    value={getItemCode(province)}
+                                >
                                     {getProvinceName(province)}
                                 </option>
                             ))}
                         </select>
 
-                        <label className="form-label-new">Municipality / City</label>
+                        <label className="form-label-new">
+                            Municipality / City
+                        </label>
                         <select
                             className="form-input-new"
                             value={selectedMunicipalityCode}
-                            onChange={(e) => handleMunicipalityChange(e.target.value)}
+                            onChange={(e) =>
+                                handleMunicipalityChange(e.target.value)
+                            }
                             required
-                            disabled={!selectedProvinceCode || municipalities.length === 0}
+                            disabled={
+                                !selectedProvinceCode ||
+                                municipalities.length === 0
+                            }
                         >
                             <option value="">Select Municipality / City</option>
                             {municipalities.map((municipality) => (
-                                <option key={getItemCode(municipality)} value={getItemCode(municipality)}>
+                                <option
+                                    key={getItemCode(municipality)}
+                                    value={getItemCode(municipality)}
+                                >
                                     {getMunicipalityName(municipality)}
                                 </option>
                             ))}
@@ -925,7 +979,9 @@ function Students() {
                                 .filter((d) => {
                                     if (filters.course_id) {
                                         const selectedCourse = courses.find(
-                                            (c) => c.course_id == filters.course_id
+                                            (c) =>
+                                                c.course_id ==
+                                                filters.course_id,
                                         );
                                         return selectedCourse
                                             ? d.department_id ==
@@ -950,7 +1006,7 @@ function Students() {
                             onChange={(e) => {
                                 const courseId = e.target.value;
                                 const selectedCourse = courses.find(
-                                    (c) => c.course_id == courseId
+                                    (c) => c.course_id == courseId,
                                 );
                                 setFilters({
                                     ...filters,
@@ -968,13 +1024,17 @@ function Students() {
                                 .filter((c) => {
                                     if (filters.department_id) {
                                         return (
-                                            c.department_id == filters.department_id
+                                            c.department_id ==
+                                            filters.department_id
                                         );
                                     }
                                     return true;
                                 })
                                 .map((c) => (
-                                    <option key={c.course_id} value={c.course_id}>
+                                    <option
+                                        key={c.course_id}
+                                        value={c.course_id}
+                                    >
                                         {formatWithAcronym(c.course_name)}
                                     </option>
                                 ))}
@@ -1029,11 +1089,13 @@ function Students() {
                                     </td>
                                     <td>
                                         {formatWithAcronym(
-                                            s.department?.department_name
+                                            s.department?.department_name,
                                         )}
                                     </td>
                                     <td>
-                                        {formatWithAcronym(s.course?.course_name)}
+                                        {formatWithAcronym(
+                                            s.course?.course_name,
+                                        )}
                                     </td>
                                     <td>
                                         {typeof s.year_level === "object" &&
@@ -1085,7 +1147,6 @@ function Students() {
                         </tbody>
                     </table>
                 </div>
-
             </div>
 
             {showForm && (
@@ -1097,6 +1158,6 @@ function Students() {
             {error && <div className="alert-error">{error}</div>}
         </div>
     );
- }
+}
 
 export default Students;

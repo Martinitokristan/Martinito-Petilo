@@ -154,6 +154,16 @@
     margin-left: 25px;
 }
 
+.report-export-row.is-empty {
+    margin-top: 8px;
+}
+
+.report-empty-state {
+    margin: 4px 0 0 25px;
+    font-size: 14px;
+    color: #888;
+}
+
 .students-page .filters,
 .filters {
     display: flex;

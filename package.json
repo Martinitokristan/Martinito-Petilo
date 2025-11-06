@@ -10,7 +10,6 @@
         "production": "node --max_old_space_size=4096 node_modules/laravel-mix/bin/cli.js --production"
     },
     "devDependencies": {
-        "@babel/preset-react": "^7.13.13",
         "@popperjs/core": "^2.10.2",
         "axios": "^0.21",
         "bootstrap": "^5.1.3",
