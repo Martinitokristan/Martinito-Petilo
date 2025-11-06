@@ -17,7 +17,7 @@ function Faculty() {
     const [filters, setFilters] = useState({ search: "", department_id: "" });
     const navigate = useNavigate();
 
-    const [formData, setFormData] = useState({
+    const initialFormState = {
         f_name: "",
         m_name: "",
         l_name: "",
@@ -28,11 +28,27 @@ function Faculty() {
         phone_number: "",
         email_address: "",
         address: "",
+        region: "",
+        province: "",
+        municipality: "",
         department_id: "",
         position: "Dean",
         status: "active",
-    });
+    };
+    const [formData, setFormData] = useState(initialFormState);
+    const [regions, setRegions] = useState([]);
+    const [provinces, setProvinces] = useState([]);
+    const [municipalities, setMunicipalities] = useState([]);
+    const [selectedRegionCode, setSelectedRegionCode] = useState("");
+    const [selectedProvinceCode, setSelectedProvinceCode] = useState("");
+    const [selectedMunicipalityCode, setSelectedMunicipalityCode] = useState("");
     const [emailWarning, setEmailWarning] = useState("");
+
+    const getItemCode = (item = {}) =>
+        item?.code || item?.psgcCode || item?.id || item?.regionCode || item?.provinceCode || item?.cityCode || item?.munCode;
+    const getRegionName = (item = {}) => item?.regionName || item?.name || "";
+    const getProvinceName = (item = {}) => item?.name || item?.provinceName || "";
+    const getMunicipalityName = (item = {}) => item?.name || item?.cityName || item?.municipalityName || "";
 
     const loadFaculty = async () => {
         try {
@@ -66,26 +82,61 @@ function Faculty() {
         }
     };
 
+    const loadRegions = async () => {
+        try {
+            const response = await axios.get("/api/admin/locations/regions");
+            setRegions(response.data || []);
+        } catch (error) {
+            console.error("Failed to load regions", error);
+            setRegions([]);
+        }
+    };
+
+    const loadProvinces = async (code) => {
+        if (!code) {
+            setProvinces([]);
+            return [];
+        }
+        try {
+            const response = await axios.get(`/api/admin/locations/regions/${code}/provinces`);
+            const list = response.data || [];
+            setProvinces(list);
+            return list;
+        } catch (error) {
+            console.error("Failed to load provinces", error);
+            setProvinces([]);
+            return [];
+        }
+    };
+
+    const loadMunicipalities = async (code) => {
+        if (!code) {
+            setMunicipalities([]);
+            return [];
+        }
+        try {
+            const response = await axios.get(`/api/admin/locations/provinces/${code}/municipalities`);
+            const list = response.data || [];
+            setMunicipalities(list);
+            return list;
+        } catch (error) {
+            console.error("Failed to load municipalities", error);
+            setMunicipalities([]);
+            return [];
+        }
+    };
+
     const closeModalAndReset = async () => {
         setShowForm(false);
         setModalContentState("form");
         setEditingId(null);
         setError("");
-        setFormData({
-            f_name: "",
-            m_name: "",
-            l_name: "",
-            suffix: "",
-            date_of_birth: "",
-            age: "",
-            sex: "male",
-            phone_number: "",
-            email_address: "",
-            address: "",
-            department_id: "",
-            position: "Dean",
-            status: "active",
-        });
+        setFormData({ ...initialFormState });
+        setSelectedRegionCode("");
+        setSelectedProvinceCode("");
+        setSelectedMunicipalityCode("");
+        setProvinces([]);
+        setMunicipalities([]);
         setEmailWarning("");
         // Reload table after closing success modal
         await loadFaculty();
@@ -93,7 +144,7 @@ function Faculty() {
 
     useEffect(() => {
         const initialLoad = async () => {
-            await loadDepartments();
+            await Promise.all([loadDepartments(), loadRegions()]);
             await loadFaculty();
             setInitialLoading(false);
         };
@@ -160,6 +211,70 @@ function Faculty() {
         if (name === "email_address") {
             validateDuplicateEmail(value, editingId);
         }
+    };
+
+    const handleRegionChange = (code) => {
+        setSelectedRegionCode(code);
+        const selected = regions.find((item) => getItemCode(item) === code);
+        const regionName = getRegionName(selected);
+        setFormData((prev) => ({
+            ...prev,
+            region: regionName,
+            province: "",
+            municipality: "",
+        }));
+        setSelectedProvinceCode("");
+        setSelectedMunicipalityCode("");
+        setProvinces([]);
+        setMunicipalities([]);
+        loadProvinces(code);
+    };
+
+    const handleProvinceChange = (code) => {
+        setSelectedProvinceCode(code);
+        const selected = provinces.find((item) => getItemCode(item) === code);
+        const provinceName = getProvinceName(selected);
+        setFormData((prev) => ({
+            ...prev,
+            province: provinceName,
+            municipality: "",
+        }));
+        setSelectedMunicipalityCode("");
+        setMunicipalities([]);
+        loadMunicipalities(code);
+    };
+
+    const handleMunicipalityChange = (code) => {
+        setSelectedMunicipalityCode(code);
+        const selected = municipalities.find((item) => getItemCode(item) === code);
+        const municipalityName = getMunicipalityName(selected);
+        setFormData((prev) => ({
+            ...prev,
+            municipality: municipalityName,
+        }));
+    };
+
+    const findCodeByName = (items, targetName, nameGetter) => {
+        const normalized = (targetName || "").trim().toLowerCase();
+        if (!normalized) return "";
+        const match = items.find(
+            (item) => (nameGetter(item) || "").trim().toLowerCase() === normalized
+        );
+        return match ? getItemCode(match) : "";
+    };
+
+    const onOpenForm = () => {
+        setEditingId(null);
+        setShowForm(true);
+        setModalContentState("form");
+        setFormData({ ...initialFormState });
+        setEmailWarning("");
+        setError("");
+        setSelectedRegionCode("");
+        setSelectedProvinceCode("");
+        setSelectedMunicipalityCode("");
+        setProvinces([]);
+        setMunicipalities([]);
     };
 
     const handleSubmit = async (e) => {
@@ -238,7 +353,7 @@ function Faculty() {
         }
     };
 
-    const onOpenEditForm = (facultyMember) => {
+    const onOpenEditForm = async (facultyMember) => {
         setEditingId(facultyMember.faculty_id);
         setFormData({
             f_name: facultyMember.f_name,
@@ -251,6 +366,9 @@ function Faculty() {
             phone_number: facultyMember.phone_number,
             email_address: facultyMember.email_address,
             address: facultyMember.address,
+            region: facultyMember.region || "",
+            province: facultyMember.province || "",
+            municipality: facultyMember.municipality || "",
             department_id: facultyMember.department_id || "",
             position: facultyMember.position || "Dean",
             status: facultyMember.status || "active",
@@ -258,6 +376,30 @@ function Faculty() {
         setEmailWarning("");
         setShowForm(true);
         setModalContentState("form");
+
+        const regionCode = findCodeByName(regions, facultyMember.region, getRegionName);
+        setSelectedRegionCode(regionCode);
+
+        if (regionCode) {
+            const provinceList = await loadProvinces(regionCode);
+            const provinceCode = findCodeByName(provinceList, facultyMember.province, getProvinceName);
+            setSelectedProvinceCode(provinceCode);
+
+            if (provinceCode) {
+                const municipalityList = await loadMunicipalities(provinceCode);
+                const municipalityCode = findCodeByName(municipalityList, facultyMember.municipality, getMunicipalityName);
+                setSelectedMunicipalityCode(municipalityCode);
+            } else {
+                setMunicipalities([]);
+                setSelectedMunicipalityCode("");
+            }
+        } else {
+            setProvinces([]);
+            setMunicipalities([]);
+            setSelectedRegionCode("");
+            setSelectedProvinceCode("");
+            setSelectedMunicipalityCode("");
+        }
     };
 
     const renderModalContent = () => {
@@ -518,6 +660,59 @@ function Faculty() {
                             />
                         </div>
 
+                        <label className="form-label-new">Region</label>
+                        <select
+                            className="form-input-new"
+                            value={selectedRegionCode}
+                            onChange={(e) => handleRegionChange(e.target.value)}
+                            required
+                        >
+                            {!selectedRegionCode && (
+                                <option value="">Select Region</option>
+                            )}
+                            {regions.map((region) => (
+                                <option key={getItemCode(region)} value={getItemCode(region)}>
+                                    {getRegionName(region)}
+                                </option>
+                            ))}
+                        </select>
+
+                        <label className="form-label-new">Province</label>
+                        <select
+                            className="form-input-new"
+                            value={selectedProvinceCode}
+                            onChange={(e) => handleProvinceChange(e.target.value)}
+                            required
+                            disabled={!selectedRegionCode || provinces.length === 0}
+                        >
+                            {!selectedProvinceCode && (
+                                <option value="">Select Province</option>
+                            )}
+                            {provinces.map((province) => (
+                                <option key={getItemCode(province)} value={getItemCode(province)}>
+                                    {getProvinceName(province)}
+                                </option>
+                            ))}
+                        </select>
+
+                        <label className="form-label-new">Municipality / City</label>
+                        <select
+                            className="form-input-new"
+                            value={selectedMunicipalityCode}
+                            onChange={(e) => handleMunicipalityChange(e.target.value)}
+                            required
+                            disabled={!selectedProvinceCode || municipalities.length === 0}
+                        >
+                            {!selectedMunicipalityCode && (
+                                <option value="">Select Municipality / City</option>
+                            )}
+                            {municipalities.map((municipality) => (
+                                <option key={getItemCode(municipality)} value={getItemCode(municipality)}>
+                                    {getMunicipalityName(municipality)}
+                                </option>
+                            ))}
+                        </select>
+
                         <label className="form-label-new full-width-label">
                             Address
                         </label>
@@ -564,7 +759,7 @@ function Faculty() {
                     </div>
                     <button
                         className="btn btn-primary new-btn"
-                        onClick={() => setShowForm(true)}
+                        onClick={onOpenForm}
                     >
                         + New Faculty
                     </button>

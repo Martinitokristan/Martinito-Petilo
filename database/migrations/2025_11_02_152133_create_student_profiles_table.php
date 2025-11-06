@@ -25,6 +25,9 @@ class CreateStudentProfilesTable extends Migration
             $table->string('phone_number');
             $table->string('email_address')->unique();
             $table->text('address');
+            $table->string('region')->nullable();
+            $table->string('province')->nullable();
+            $table->string('municipality')->nullable();
             $table->enum('status', ['active', 'inactive', 'graduated', 'dropped'])->default('active');
             $table->foreignId('department_id')->constrained('departments', 'department_id')->cascadeOnDelete();
             $table->foreignId('course_id')->constrained('courses', 'course_id')->cascadeOnDelete();

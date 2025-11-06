@@ -47,7 +47,7 @@ class GoogleSheetsExportService
         $headers = [
             'student_id', 'f_name', 'm_name', 'l_name', 'suffix',
             'date_of_birth', 'age', 'sex', 'phone_number', 'email_address',
-            'address', 'status', 'department', 'course',
+            'address', 'region', 'province', 'municipality', 'status', 'department', 'course',
             'academic_year', 'year_level', 'created_at', 'updated_at', 'archived_at'
         ];
 
@@ -65,6 +65,9 @@ class GoogleSheetsExportService
                 $student->phone_number ?? '',
                 $student->email_address ?? '',
                 $student->address ?? '',
+                $student->region ?? '',
+                $student->province ?? '',
+                $student->municipality ?? '',
                 $student->status ?? '',
                 optional($student->department)->department_name ?? '',
                 optional($student->course)->course_name ?? '',
@@ -160,7 +163,7 @@ class GoogleSheetsExportService
         $headers = [
             'faculty_id', 'f_name', 'm_name', 'l_name', 'suffix',
             'date_of_birth', 'age', 'sex', 'phone_number', 'email_address',
-            'address', 'position', 'status', 'department',
+            'address', 'region', 'province', 'municipality', 'position', 'status', 'department',
             'created_at', 'updated_at', 'archived_at'
         ];
 
@@ -178,6 +181,9 @@ class GoogleSheetsExportService
                 $faculty->phone_number ?? '',
                 $faculty->email_address ?? '',
                 $faculty->address ?? '',
+                $faculty->region ?? '',
+                $faculty->province ?? '',
+                $faculty->municipality ?? '',
                 $faculty->position ?? '',
                 $faculty->status ?? '',
                 optional($faculty->department)->department_name ?? '',
@@ -206,6 +212,9 @@ class GoogleSheetsExportService
                 $student->phone_number ?? '',
                 $student->email_address ?? '',
                 $student->address ?? '',
+                $student->region ?? '',
+                $student->province ?? '',
+                $student->municipality ?? '',
                 $student->status ?? '',
                 $student->department_id ?? '',
                 $student->course_id ?? '',
@@ -243,6 +252,9 @@ class GoogleSheetsExportService
                 $member->phone_number ?? '',
                 $member->email_address ?? '',
                 $member->address ?? '',
+                $member->region ?? '',
+                $member->province ?? '',
+                $member->municipality ?? '',
                 $member->position ?? '',
                 $member->status ?? '',
                 $member->department_id ?? '',
@@ -352,7 +364,7 @@ class GoogleSheetsExportService
         }
 
         $service = $this->service;
-        $range = 'Students!A2:S';
+        $range = 'Students!A2:V';
 
         $response = $service->spreadsheets_values->get($spreadsheetId, $range);
         $rows = $response->getValues();
@@ -369,8 +381,8 @@ class GoogleSheetsExportService
             }
 
             $originalColumnCount = count($row);
-            if ($originalColumnCount < 19) {
-                $row = array_pad($row, 19, null);
+            if ($originalColumnCount < 22) {
+                $row = array_pad($row, 22, null);
             }
 
             $sheetRow = $index + 2; // account for header row in sheet
@@ -386,14 +398,17 @@ class GoogleSheetsExportService
                 'phone' => 8,
                 'email' => 9,
                 'address' => 10,
-                'status' => 11,
-                'department' => 12,
-                'course' => 13,
-                'academic_year' => 14,
-                'year_level' => 15,
-                'created_at' => 16,
-                'updated_at' => 17,
-                'archived_at' => 18,
+                'region' => 11,
+                'province' => 12,
+                'municipality' => 13,
+                'status' => 14,
+                'department' => 15,
+                'course' => 16,
+                'academic_year' => 17,
+                'year_level' => 18,
+                'created_at' => 19,
+                'updated_at' => 20,
+                'archived_at' => 21,
             ];
 
             $legacyIdx = [
@@ -407,6 +422,9 @@ class GoogleSheetsExportService
                 'phone' => 7,
                 'email' => 8,
                 'address' => 9,
+                'region' => null,
+                'province' => null,
+                'municipality' => null,
                 'status' => 10,
                 'department' => 11,
                 'course' => 12,
@@ -540,6 +558,9 @@ class GoogleSheetsExportService
                 'phone_number' => $phone_number,
                 'email_address' => $email,
                 'address' => $row[$idx['address']] ?? '',
+                'region' => $idx['region'] !== null ? ($row[$idx['region']] ?? '') : '',
+                'province' => $idx['province'] !== null ? ($row[$idx['province']] ?? '') : '',
+                'municipality' => $idx['municipality'] !== null ? ($row[$idx['municipality']] ?? '') : '',
                 'status' => $row[$idx['status']] ?? '',
                 'department_id' => $department ? $department->department_id : null,
                 'course_id' => $course ? $course->course_id : null,
@@ -580,7 +601,7 @@ class GoogleSheetsExportService
     {
         $spreadsheetId = $this->spreadsheetId;
         $service = $this->service;
-        $range = 'Faculty!A2:P'; // Adjust range as needed
+        $range = 'Faculty!A2:V';
 
         $response = $service->spreadsheets_values->get($spreadsheetId, $range);
         $rows = $response->getValues();
@@ -596,7 +617,7 @@ class GoogleSheetsExportService
                 continue; // skip blank rows
             }
 
-            $hasAgeColumn = count($row) >= 16;
+            $hasAgeColumn = count($row) >= 21;
             $idx = $hasAgeColumn ? [
                 'faculty_id' => 0,
                 'f_name' => 1,
@@ -608,12 +629,16 @@ class GoogleSheetsExportService
                 'phone' => 8,
                 'email' => 9,
                 'address' => 10,
-                'position' => 11,
-                'status' => 12,
-                'department' => 13,
-                'created_at' => 14,
-                'updated_at' => 15,
-                'archived_at' => 16,
+                'region' => 11,
+                'province' => 12,
+                'municipality' => 13,
+                'position' => 14,
+                'status' => 15,
+                'department' => 16,
+                'created_at' => 17,
+                'updated_at' => 18,
+                'archived_at' => 19,
+                'age' => 20,
             ] : [
                 'faculty_id' => 0,
                 'f_name' => 1,
@@ -625,6 +650,9 @@ class GoogleSheetsExportService
                 'phone' => 7,
                 'email' => 8,
                 'address' => 9,
+                'region' => null,
+                'province' => null,
+                'municipality' => null,
                 'position' => 10,
                 'status' => 11,
                 'department' => 12,
@@ -689,6 +717,9 @@ class GoogleSheetsExportService
                 'phone_number'  => $phone_number,
                 'email_address' => $email,
                 'address'       => $row[$idx['address']] ?? '',
+                'region'        => $idx['region'] !== null ? ($row[$idx['region']] ?? '') : '',
+                'province'      => $idx['province'] !== null ? ($row[$idx['province']] ?? '') : '',
+                'municipality'  => $idx['municipality'] !== null ? ($row[$idx['municipality']] ?? '') : '',
                 'position'      => $row[$idx['position']] ?? '',
                 'status'        => $row[$idx['status']] ?? '',
                 'department_id' => $department ? $department->department_id : null,

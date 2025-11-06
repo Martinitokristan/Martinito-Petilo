@@ -25,6 +25,9 @@ class CreateFacultyProfilesTable extends Migration
             $table->string('phone_number');
             $table->string('email_address');
             $table->text('address');
+            $table->string('region')->nullable();
+            $table->string('province')->nullable();
+            $table->string('municipality')->nullable();
             $table->enum('status', ['active', 'inactive', 'graduated', 'dropped'])->default('active');
             $table->enum('position', ['Dean', 'Instructor', 'Part-time', 'Department Head'])->nullable();
             $table->foreignId('department_id')->constrained('departments', 'department_id')->cascadeOnDelete();

@@ -29,6 +29,9 @@ class FacultyProfile extends Model
         'phone_number',
         'email_address',
         'address',
+        'region',
+        'province',
+        'municipality',
         'department_id',
         'position',
         'status'

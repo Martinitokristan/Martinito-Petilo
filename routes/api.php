@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\FacultyController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\DepartmentHeadController;
+use App\Http\Controllers\Admin\LocationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +36,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AdminController::class, 'logout']);
 
     Route::prefix('admin')->group(function () {
+        Route::get('/locations/regions', [LocationController::class, 'regions']);
+        Route::get('/locations/regions/{region}/provinces', [LocationController::class, 'provinces']);
+        Route::get('/locations/provinces/{province}/municipalities', [LocationController::class, 'municipalities']);
+
         // Department API Resource
         Route::apiResource('departments', DepartmentController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
         Route::post('/departments/{department}/archive', [DepartmentController::class, 'archive']);

@@ -42,6 +42,9 @@ class StudentController extends Controller
                 'course_id',
                 'academic_year_id',
                 'year_level',
+                'region',
+                'province',
+                'municipality',
                 'archived_at'
             );
 
@@ -94,6 +97,9 @@ class StudentController extends Controller
                 'phone_number' => 'required|regex:/^09[0-9]{9}$/|size:11',
                 'email_address' => 'required|email|unique:student_profiles,email_address',
                 'address' => 'required|string|max:1000',
+                'region' => 'required|string|max:255',
+                'province' => 'required|string|max:255',
+                'municipality' => 'required|string|max:255',
                 'status' => 'required|in:active,inactive,graduated,dropped',
                 'department_id' => 'required|exists:departments,department_id',
                 'course_id' => 'required|exists:courses,course_id',
@@ -137,6 +143,9 @@ class StudentController extends Controller
                 'phone_number' => 'required|regex:/^09[0-9]{9}$/|size:11',
                 'email_address' => 'required|email|unique:student_profiles,email_address,' . $id . ',student_id',
                 'address' => 'required|string|max:1000',
+                'region' => 'required|string|max:255',
+                'province' => 'required|string|max:255',
+                'municipality' => 'required|string|max:255',
                 'status' => 'required|in:active,inactive,graduated,dropped',
                 'department_id' => 'required|exists:departments,department_id',
                 'course_id' => 'required|exists:courses,course_id',

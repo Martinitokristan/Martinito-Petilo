@@ -295,110 +295,43 @@ class ReportController extends Controller
         if ($type === 'faculty') {
             $departmentId = $request->input('department_id');
 
-            $faculty = \App\Models\FacultyProfile::query()
-                ->select([
-                    'faculty_id',
-                    'f_name',
-                    'm_name',
-                    'l_name',
-                    'suffix',
-                    'email_address',
-                    'phone_number',
-                    'position',
-                    'status',
-                    'department_id',
-                ])
-                ->with(['department:department_id,department_name'])
+            $facultyQuery = \App\Models\FacultyProfile::query()
+                ->with(['department'])
                 ->whereNull('archived_at');
 
             if ($departmentId) {
-                $faculty->where('department_id', $departmentId);
+                $facultyQuery->where('department_id', $departmentId);
             }
 
-            $faculty = $faculty->get();
+            $faculty = $facultyQuery->get();
 
-            $departmentName = optional($faculty->first()->department ?? null)->department_name ?? 'Faculty';
+            $departmentName = optional(optional($faculty->first())->department)->department_name ?? 'Faculty';
             $tabName = $this->buildTabName($departmentName, 'FACULTY');
 
-            $rows = $faculty->map(function ($member) {
-                $fullName = trim(collect([
-                    $member->f_name,
-                    $member->m_name,
-                    $member->l_name,
-                    $member->suffix,
-                ])->filter()->implode(' '));
-
-                return [
-                    $member->faculty_id,
-                    $fullName,
-                    $member->email_address,
-                    $member->phone_number,
-                    optional($member->department)->department_name,
-                    $member->position,
-                    $member->status,
-                ];
-            });
-
-            app(GoogleSheetsExportService::class)->exportRowsToTab(
-                ['Faculty ID', 'Name', 'Email', 'Phone', 'Department', 'Position', 'Status'],
-                $rows,
-                $tabName
-            );
+            $this->sheets->exportFacultyReportToTab($faculty, $tabName);
         }
 
         if ($type === 'student') {
             $courseId = $request->input('course_id');
 
-            $students = \App\Models\StudentProfile::query()
-                ->select([
-                    'student_id',
-                    'f_name',
-                    'm_name',
-                    'l_name',
-                    'suffix',
-                    'email_address',
-                    'status',
-                    'course_id',
-                    'department_id',
-                ])
+            $studentsQuery = \App\Models\StudentProfile::query()
                 ->with([
-                    'course:course_id,course_name',
-                    'department:department_id,department_name',
+                    'course',
+                    'department',
+                    'academicYear',
                 ])
                 ->whereNull('archived_at');
 
             if ($courseId) {
-                $students->where('course_id', $courseId);
+                $studentsQuery->where('course_id', $courseId);
             }
 
-            $students = $students->get();
+            $students = $studentsQuery->get();
 
-            $courseName = optional($students->first()->course ?? null)->course_name ?? 'Student';
+            $courseName = optional(optional($students->first())->course)->course_name ?? 'Student';
             $tabName = $this->buildTabName($courseName, 'STUDENT');
 
-            $rows = $students->map(function ($student) {
-                $fullName = trim(collect([
-                    $student->f_name,
-                    $student->m_name,
-                    $student->l_name,
-                    $student->suffix,
-                ])->filter()->implode(' '));
-
-                return [
-                    'student_id' => $student->student_id,
-                    'name' => $fullName,
-                    'email' => $student->email_address,
-                    'course' => optional($student->course)->course_name,
-                    'department' => optional($student->department)->department_name,
-                    'status' => $student->status,
-                ];
-            });
-
-            app(GoogleSheetsExportService::class)->exportRowsToTab(
-                ['student_id', 'name', 'email', 'course', 'department', 'status'],
-                $rows,
-                $tabName
-            );
+            $this->sheets->exportStudentReportToTab($students, $tabName);
         }
 
         return response()->json(['success' => true]);
