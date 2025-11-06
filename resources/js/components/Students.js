@@ -821,13 +821,13 @@ function Students() {
                             }
                             required
                         />
-
-                        {error && (
-                            <div className="alert-error full-width-error">
-                                {error}
-                            </div>
-                        )}
                     </div>
+
+                    {error && (
+                        <div className="alert-error full-width-error">
+                            {error}
+                        </div>
+                    )}
 
                     <div className="modal-footer-new">
                         <button
@@ -858,7 +858,7 @@ function Students() {
                         className="btn btn-primary new-btn"
                         onClick={onOpenForm}
                     >
-                        + New Student
+                        Add Student
                     </button>
                 </header>
 

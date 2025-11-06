@@ -44,41 +44,103 @@
     justify-content: space-between;
     gap: 24px;
     margin-bottom: 24px;
+}
 
-    .page-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 4px;
-    }
+.page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 4px;
+}
 
-    .page-subtitle {
-        color: #6b7280;
-        font-size: 15px;
-    }
+.page-subtitle {
+    color: #6b7280;
+    font-size: 15px;
+    margin: 0;
+}
+
+.new-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 26px;
+    background: linear-gradient(135deg, #6048f5 0%, #8d4ae4 100%);
+    border: none;
+    border-radius: 26px;
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 18px 30px -18px rgba(96, 72, 245, 0.6);
+}
+
+.new-btn::before {
+    content: "+";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 15px;
+    line-height: 1;
+}
+
+.new-btn:hover {
+    box-shadow: 0 20px 32px -18px rgba(96, 72, 245, 0.7);
 }
 
 .tabs {
-    display: inline-flex;
-    gap: 25px;
-    border: 1px solid #d1d5db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 12px;
-    background-color: white;
-    border-radius: 8px;
-    padding: 4px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ece8f5;
+    
+    .tab {
+        margin: 0 30px; // Equal spacing on both sides of each tab
+        position: relative;
+        
+        &:first-child {
+            margin-left: 0;
+        }
+        
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+}
+
+.settings-tabs {
+    margin-bottom: 24px;
 }
 
 .tab {
+    position: relative;
     border: none;
-    background: white;
-    color: #4d44b5;
-    padding: 6px 12px;
-    border-radius: 5px;
+    background: transparent;
+    color: #c3c8d8;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    padding: 0 0 12px;
+    cursor: pointer;
 }
 
 .tab.active {
-    background: #ff787856;
-    border-radius: 45px;
+    color: #4f46de;
+}
+
+.tab.active::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -3px;
+    width: 118%;
+    height: 3px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: linear-gradient(90deg, #f7d2e1 0%, #e7b2c7 100%);
 }
 
 .card {

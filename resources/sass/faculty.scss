@@ -338,8 +338,6 @@
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
-    max-height: 90vh; /* Allow modal to take up more vertical space and scroll */
-    overflow: hidden;
     padding: 30px;
 }
 
@@ -373,12 +371,6 @@
     font-weight: 700;
     border-bottom: 1px solid #e5e7eb;
     margin-bottom: 20px;
-}
-
-.modal-body {
-    padding: 0 30px;
-    overflow-y: auto; /* Allow scrolling for the form fields */
-    flex-grow: 1; /* Allow body to grow and take available space */
 }
 
 .modal-footer {
@@ -647,6 +639,70 @@
     margin-top: 25px;
     padding-top: 20px;
     border-top: 1px solid #e5e7eb;
+}
+
+@media (max-height: 820px) {
+    .modal-card {
+        padding: 24px;
+    }
+
+    .modal-header-new {
+        padding: 18px 24px;
+        margin: -24px -24px 18px -24px;
+    }
+
+    .form-grid-new {
+        grid-template-columns: 80px 1fr 80px 1fr;
+        gap: 12px 10px;
+        margin-bottom: 16px;
+    }
+
+    .form-label-new {
+        font-size: 13px;
+    }
+
+    .form-input-new {
+        padding: 7px 10px;
+        font-size: 13px;
+    }
+
+    .modal-footer-new {
+        margin-top: 18px;
+        padding-top: 16px;
+        gap: 12px;
+    }
+
+    .btn-cancel-new,
+    .btn-save-new {
+        padding: 8px 28px !important;
+        font-size: 14px !important;
+    }
+}
+
+@media (max-height: 720px) {
+    .modal-header-new {
+        padding: 16px 20px;
+        margin: -20px -20px 16px -20px;
+    }
+
+    .modal-card {
+        padding: 20px;
+    }
+
+    .form-grid-new {
+        grid-template-columns: 75px 1fr 75px 1fr;
+        gap: 10px 8px;
+    }
+
+    .modal-footer-new {
+        margin-top: 14px;
+        padding-top: 14px;
+    }
+
+    .btn-cancel-new,
+    .btn-save-new {
+        padding: 7px 24px !important;
+    }
 }
 
 .btn-cancel-new {

@@ -551,7 +551,7 @@ function Report() {
                                         }}
                                     >
                                         {loading
-                                            ? "Loading..."
+                                            ? ""
                                             : "Click 'Generate Report' to see the data."}
                                     </td>
                                 </tr>

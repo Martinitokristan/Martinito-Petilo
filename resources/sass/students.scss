@@ -402,6 +402,55 @@
     gap: 12px;
 }
 
+@media (max-height: 820px) {
+    .modal-card {
+        padding: 24px;
+    }
+
+    .modal-header-container {
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+    }
+
+    .form-grid-container {
+        grid-template-columns: 140px 1fr;
+        gap: 13px 12px;
+        padding-bottom: 16px;
+    }
+
+    .modal-actions {
+        margin-top: 18px;
+        padding-top: 16px;
+        gap: 10px;
+    }
+
+    .modal-actions .btn {
+        padding: 8px 24px;
+    }
+}
+
+@media (max-height: 720px) {
+    .modal-card {
+        padding: 20px;
+    }
+
+    .modal-header-container {
+        padding-bottom: 14px;
+        margin-bottom: 14px;
+    }
+
+    .form-grid-container {
+        grid-template-columns: 130px 1fr;
+        gap: 12px 10px;
+        padding-bottom: 14px;
+    }
+
+    .modal-actions {
+        margin-top: 14px;
+        padding-top: 14px;
+    }
+}
+
 /*
 ====================================
      LOADING OVERLAY STYLES
