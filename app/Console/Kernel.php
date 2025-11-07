@@ -15,7 +15,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Clear location caches daily at 3:00 AM
+        $schedule->command('location:clear-cache')
+                 ->dailyAt('3:00')
+                 ->timezone('Asia/Manila')
+                 ->onOneServer()
+                 ->withoutOverlapping();
     }
 
     /**

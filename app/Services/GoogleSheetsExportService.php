@@ -159,6 +159,11 @@ class GoogleSheetsExportService
         $this->exportFacultyReportToTab($faculties, 'All Faculty Data');
     }
 
+    public function getSpreadsheetId(): string
+    {
+        return $this->spreadsheetId;
+    }
+
     public function exportFacultyReportToTab($faculties, string $sheetName)
     {
         $headers = [
@@ -469,18 +474,23 @@ class GoogleSheetsExportService
                 $phone_number = $rawPhone;
             }
 
-            $rawYearLevel = isset($row[$idx['year_level']]) ? trim($row[$idx['year_level']]) : null;
+            $rawYearLevel = isset($row[$idx['year_level']]) ? trim((string) $row[$idx['year_level']]) : null;
+            $normalizedYearLevel = $rawYearLevel !== null && $rawYearLevel !== ''
+                ? strtolower(preg_replace('/\s+/', '', $rawYearLevel))
+                : null;
             $yearLevelMap = [
                 '1' => '1st',
-                '2' => '2nd',
-                '3' => '3rd',
-                '4' => '4th',
                 '1st' => '1st',
+                '2' => '2nd',
                 '2nd' => '2nd',
+                '3' => '3rd',
                 '3rd' => '3rd',
+                '4' => '4th',
                 '4th' => '4th',
             ];
-            $year_level = $rawYearLevel && isset($yearLevelMap[$rawYearLevel]) ? $yearLevelMap[$rawYearLevel] : $rawYearLevel;
+            $year_level = $normalizedYearLevel !== null && isset($yearLevelMap[$normalizedYearLevel])
+                ? $yearLevelMap[$normalizedYearLevel]
+                : ($rawYearLevel !== '' ? $rawYearLevel : null);
 
             $studentId = $row[$idx['student_id']] ?? null;
             $email = strtolower(trim($row[$idx['email']] ?? ''));
