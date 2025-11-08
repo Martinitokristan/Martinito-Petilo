@@ -576,11 +576,49 @@ class GoogleSheetsExportService
         ];
     }
 
-    public function importFacultyFromSheet()
+    public function importFacultyFromSheet(?string $sheetName = null)
     {
         $spreadsheetId = $this->spreadsheetId;
         $service = $this->service;
-        $range = 'Faculty!A2:V';
+
+        $availableSheets = $this->listSheetTitles($spreadsheetId);
+        if ($sheetName !== null) {
+            $candidate = trim($sheetName);
+            if ($candidate === '') {
+                throw new \InvalidArgumentException('Sheet name for import cannot be empty.');
+            }
+            if (!in_array($candidate, $availableSheets, true)) {
+                throw new \RuntimeException("Sheet '{$candidate}' was not found in the spreadsheet.");
+            }
+            $resolvedSheet = $candidate;
+        } else {
+            $preferred = ['All Faculty Data', 'Faculty'];
+            $resolvedSheet = null;
+
+            foreach ($preferred as $candidate) {
+                if (in_array($candidate, $availableSheets, true)) {
+                    $resolvedSheet = $candidate;
+                    break;
+                }
+            }
+
+            if ($resolvedSheet === null) {
+                foreach ($availableSheets as $title) {
+                    if (preg_match('/FACULTY$/i', $title)) {
+                        $resolvedSheet = $title;
+                        break;
+                    }
+                }
+            }
+
+            if ($resolvedSheet === null) {
+                throw new \RuntimeException(
+                    'Unable to locate a faculty tab in the spreadsheet. Available sheet tabs: ' . implode(', ', $availableSheets)
+                );
+            }
+        }
+
+        $range = $this->buildRange($resolvedSheet, 'A2:Z');
 
         $response = $service->spreadsheets_values->get($spreadsheetId, $range);
         $rows = $response->getValues();
@@ -591,19 +629,36 @@ class GoogleSheetsExportService
         $duplicateEmails = [];
         $seenEmails = [];
 
+        $normalizeOptional = static function ($value) {
+            if ($value === null) {
+                return null;
+            }
+
+            if (is_string($value)) {
+                $value = trim($value);
+            }
+
+            return $value === '' ? null : $value;
+        };
+
         foreach ($rows as $index => $row) {
             if (empty(array_filter($row, fn ($value) => $value !== null && $value !== ''))) {
                 continue; // skip blank rows
             }
 
-            $hasAgeColumn = count($row) >= 21;
-            $idx = $hasAgeColumn ? [
+            $originalColumnCount = count($row);
+            if ($originalColumnCount < 20) {
+                $row = array_pad($row, 20, null);
+            }
+
+            $withAgeIdx = [
                 'faculty_id' => 0,
                 'f_name' => 1,
                 'm_name' => 2,
                 'l_name' => 3,
                 'suffix' => 4,
                 'date_of_birth' => 5,
+                'age' => 6,
                 'sex' => 7,
                 'phone' => 8,
                 'email' => 9,
@@ -617,8 +672,9 @@ class GoogleSheetsExportService
                 'created_at' => 17,
                 'updated_at' => 18,
                 'archived_at' => 19,
-                'age' => 20,
-            ] : [
+            ];
+
+            $legacyIdx = [
                 'faculty_id' => 0,
                 'f_name' => 1,
                 'm_name' => 2,
@@ -640,18 +696,53 @@ class GoogleSheetsExportService
                 'archived_at' => 15,
             ];
 
-            // Accept either ID or name for department
+            $sexMap = [
+                'male' => 'male',
+                'm' => 'male',
+                'female' => 'female',
+                'f' => 'female',
+                'other' => 'other',
+                'o' => 'other',
+            ];
+
+            $sexCandidateWithAge = strtolower(trim((string) ($row[$withAgeIdx['sex']] ?? '')));
+            $sexCandidateLegacy = strtolower(trim((string) ($row[$legacyIdx['sex']] ?? '')));
+
+            if ($sexCandidateWithAge !== '' && isset($sexMap[$sexCandidateWithAge])) {
+                $idx = $withAgeIdx;
+                $hasAgeColumn = true;
+                $rawSex = $sexCandidateWithAge;
+            } elseif ($sexCandidateLegacy !== '' && isset($sexMap[$sexCandidateLegacy])) {
+                $idx = $legacyIdx;
+                $hasAgeColumn = false;
+                $rawSex = $sexCandidateLegacy;
+            } else {
+                $hasAgeColumn = $originalColumnCount >= 20;
+                $idx = $hasAgeColumn ? $withAgeIdx : $legacyIdx;
+                $rawSex = strtolower(trim((string) ($row[$idx['sex']] ?? '')));
+            }
+
+            $normalizedSex = $rawSex !== '' && isset($sexMap[$rawSex]) ? $sexMap[$rawSex] : null;
+
+            $ageValue = null;
+            if ($hasAgeColumn) {
+                $candidateAge = $row[$withAgeIdx['age']] ?? null;
+                if (is_string($candidateAge)) {
+                    $candidateAge = trim($candidateAge);
+                }
+                $ageValue = $candidateAge === '' ? null : $candidateAge;
+            }
+
             $department = null;
-            $deptReference = $row[$idx['department']] ?? null;
-            if (!empty($deptReference)) {
-                if (is_numeric($deptReference)) {
-                    $department = \App\Models\Department::find($deptReference);
+            $departmentReference = isset($row[$idx['department']]) ? trim((string) $row[$idx['department']]) : null;
+            if ($departmentReference !== null && $departmentReference !== '') {
+                if (is_numeric($departmentReference)) {
+                    $department = \App\Models\Department::find($departmentReference);
                 } else {
-                    $department = \App\Models\Department::where('department_name', $deptReference)->first();
+                    $department = \App\Models\Department::where('department_name', $departmentReference)->first();
                 }
             }
 
-            // Phone number fix
             $rawPhone = isset($row[$idx['phone']]) ? trim($row[$idx['phone']]) : '';
             if (preg_match('/^9\d{9}$/', $rawPhone)) {
                 $phone_number = '0' . $rawPhone;
@@ -663,7 +754,7 @@ class GoogleSheetsExportService
 
             $sheetRow = $index + 2;
             $facultyId = $row[$idx['faculty_id']] ?? null;
-            $email = strtolower(trim($row[$idx['email']] ?? ''));
+            $email = strtolower(trim((string) ($row[$idx['email']] ?? '')));
 
             if ($email !== '') {
                 if (isset($seenEmails[$email])) {
@@ -685,27 +776,43 @@ class GoogleSheetsExportService
                 }
             }
 
+            if ($normalizedSex === null) {
+                $providedSex = trim((string) ($row[$idx['sex']] ?? ''));
+                if ($providedSex === '') {
+                    $errors[] = "Row {$sheetRow}: Missing sex value.";
+                } else {
+                    $errors[] = "Row {$sheetRow}: Invalid sex value '{$providedSex}'. Allowed: male, female, other.";
+                }
+                continue;
+            }
+
+            $dateOfBirth = $normalizeOptional($row[$idx['date_of_birth']] ?? null);
+            $resolvedAge = $this->resolveAge($dateOfBirth, $ageValue);
+            if ($resolvedAge === '') {
+                $resolvedAge = null;
+            }
+
             $facultyData = [
                 'faculty_id'    => $facultyId,
                 'f_name'        => $row[$idx['f_name']] ?? '',
                 'm_name'        => $row[$idx['m_name']] ?? '',
                 'l_name'        => $row[$idx['l_name']] ?? '',
                 'suffix'        => $row[$idx['suffix']] ?? '',
-                'date_of_birth' => $row[$idx['date_of_birth']] ?? null,
-                'sex'           => $row[$idx['sex']] ?? '',
+                'date_of_birth' => $dateOfBirth,
+                'age'           => $resolvedAge,
+                'sex'           => $normalizedSex,
                 'phone_number'  => $phone_number,
                 'email_address' => $email,
                 'address'       => $row[$idx['address']] ?? '',
-                'region'        => $idx['region'] !== null ? ($row[$idx['region']] ?? '') : '',
-                'province'      => $idx['province'] !== null ? ($row[$idx['province']] ?? '') : '',
-                'municipality'  => $idx['municipality'] !== null ? ($row[$idx['municipality']] ?? '') : '',
+                'region'        => $idx['region'] !== null ? $normalizeOptional($row[$idx['region']] ?? null) : null,
+                'province'      => $idx['province'] !== null ? $normalizeOptional($row[$idx['province']] ?? null) : null,
+                'municipality'  => $idx['municipality'] !== null ? $normalizeOptional($row[$idx['municipality']] ?? null) : null,
                 'position'      => $row[$idx['position']] ?? '',
                 'status'        => $row[$idx['status']] ?? '',
                 'department_id' => $department ? $department->department_id : null,
-                'age'           => $this->resolveAge($row[$idx['date_of_birth']] ?? null, null),
-                'created_at'    => $row[$idx['created_at']] ?? null,
-                'updated_at'    => $row[$idx['updated_at']] ?? null,
-                'archived_at'   => $row[$idx['archived_at']] ?? null,
+                'created_at'    => $normalizeOptional($row[$idx['created_at']] ?? null),
+                'updated_at'    => $normalizeOptional($row[$idx['updated_at']] ?? null),
+                'archived_at'   => $normalizeOptional($row[$idx['archived_at']] ?? null),
             ];
 
             try {

@@ -55,9 +55,10 @@ function Report() {
         async function fetchFilters() {
             setInitialLoading(true);
             try {
+                await ensureCsrf();
                 const [coursesRes, departmentsRes] = await Promise.all([
-                    axios.get("/api/courses"),
-                    axios.get("/api/departments"),
+                    axios.get("api/admin/reports/courses"),
+                    axios.get("api/admin/reports/departments"),
                 ]);
                 setCourses(
                     Array.isArray(coursesRes.data) ? coursesRes.data : [],
@@ -194,7 +195,7 @@ function Report() {
         setExporting(true);
         setModalState("loading");
         try {
-            await axios.post("/api/export-to-sheets", {
+            await axios.post("/api/admin/reports/export-to-sheets", {
                 type: reportType,
                 course_id: selectedCourse,
                 department_id: selectedDepartment,
@@ -257,7 +258,7 @@ function Report() {
     const handleImportStudents = async () => {
         setLoading(true);
         try {
-            await axios.post("/api/admin/reports/import-students");
+            await axios.post("/api/admin/reports/students/import");
             setModalState("success");
             setModalMessage("Imported students from Google Sheets!");
             // Optionally, refresh the report/table
@@ -275,9 +276,7 @@ function Report() {
         setLoading(true);
         try {
             await ensureCsrf();
-            const { data } = await axios.post(
-                "/api/admin/reports/import-faculty",
-            );
+            const { data } = await axios.post("/api/admin/reports/faculty/import");
             if (data.success) {
                 setReportType(REPORT_TYPES.faculty);
                 setSelectedDepartment("");
