@@ -824,7 +824,6 @@ function Settings() {
                                                     <tr>
                                                         <th>Type</th>
                                                         <th>Name</th>
-                                                        <th>Details</th>
                                                         <th>Archived At</th>
                                                         <th
                                                             style={{
@@ -860,11 +859,6 @@ function Settings() {
                                                                     {
                                                                         item._label
                                                                     }
-                                                                </td>
-                                                                <td>
-                                                                    {item._department ||
-                                                                        item._course ||
-                                                                        "-"}
                                                                 </td>
                                                                 <td>
                                                                     {item.archived_at

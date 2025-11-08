@@ -7,6 +7,7 @@ use App\Models\StudentProfile;
 use App\Models\FacultyProfile;
 use App\Models\Course;
 use App\Models\Department;
+use App\Models\AcademicYear;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
@@ -28,42 +29,126 @@ class AdminController extends Controller
 
     public function dashboardJson()
     {
+        $currentAcademicYear = $this->getCurrentAcademicYear();
+        $courseDistribution = $this->prepareStudentsByCourseData($currentAcademicYear);
+
         $data = [
-            'total_students' => StudentProfile::count(),
-            'total_faculty' => FacultyProfile::count(),
-            'total_courses' => Course::count(),
-            'total_departments' => Department::count(),
-            'students_by_course' => $this->getStudentsByCourse(),
+            'total_students' => StudentProfile::whereNull('archived_at')->count(),
+            'total_faculty' => FacultyProfile::whereNull('archived_at')->count(),
+            'total_courses' => Course::whereNull('archived_at')->count(),
+            'total_departments' => Department::whereNull('archived_at')->count(),
+            'current_academic_year' => optional($currentAcademicYear)->school_year,
+            'course_distribution_year' => $courseDistribution['academic_year'],
+            'students_by_course' => $courseDistribution['courses'],
             'faculty_by_department' => $this->getFacultyByDepartment(),
+            'students_over_time' => $this->getStudentEnrollmentTrend(),
         ];
 
         return response()->json($data);
     }
 
-    protected function getStudentsByCourse()
+    protected function getCurrentAcademicYear(): ?AcademicYear
     {
-        return Course::withCount('students')
+        return AcademicYear::query()
+            ->whereNull('archived_at')
+            ->orderByDesc('school_year')
+            ->first();
+    }
+
+    protected function getStudentsByCourse(?int $academicYearId = null)
+    {
+        $courses = Course::query()
+            ->whereNull('archived_at')
+            ->withCount(['students as active_students_count' => function ($query) use ($academicYearId) {
+                $query->whereNull('archived_at');
+
+                if ($academicYearId !== null) {
+                    $query->where('academic_year_id', $academicYearId);
+                }
+            }])
             ->orderBy('course_name')
+            ->get();
+
+        return $courses->map(fn ($course) => [
+            'label' => $course->course_name,
+            'count' => (int) ($course->active_students_count ?? 0),
+        ]);
+    }
+
+    protected function prepareStudentsByCourseData(?AcademicYear $currentAcademicYear): array
+    {
+        $targetYearId = optional($currentAcademicYear)->academic_year_id;
+        $distribution = $this->getStudentsByCourse($targetYearId);
+        $totalStudents = $distribution->sum('count');
+
+        if ($totalStudents > 0 || !$currentAcademicYear) {
+            return [
+                'academic_year' => optional($currentAcademicYear)->school_year,
+                'courses' => $distribution,
+            ];
+        }
+
+        $fallbackYear = AcademicYear::query()
+            ->whereNull('archived_at')
+            ->where('academic_year_id', '<>', $currentAcademicYear->academic_year_id)
+            ->withCount(['students as active_students_count' => function ($query) {
+                $query->whereNull('archived_at');
+            }])
+            ->orderByDesc('school_year')
             ->get()
-            ->map(function ($course) {
-                return [
-                    'label' => $course->course_name,
-                    'count' => $course->students_count,
-                ];
+            ->first(function ($year) {
+                return ($year->active_students_count ?? 0) > 0;
             });
+
+        if ($fallbackYear) {
+            return [
+                'academic_year' => $fallbackYear->school_year,
+                'courses' => $this->getStudentsByCourse($fallbackYear->academic_year_id),
+            ];
+        }
+
+        return [
+            'academic_year' => optional($currentAcademicYear)->school_year,
+            'courses' => $distribution,
+        ];
     }
 
     protected function getFacultyByDepartment()
     {
-        return Department::withCount('faculty')
+        $departments = Department::query()
+            ->whereNull('archived_at')
+            ->withCount(['faculty as active_faculty_count' => function ($query) {
+                $query->whereNull('archived_at');
+            }])
             ->orderBy('department_name')
-            ->get()
-            ->map(function ($department) {
-                return [
-                    'label' => $department->department_name,
-                    'count' => $department->faculty_count,
-                ];
-            });
+            ->get();
+
+        return $departments->map(fn ($department) => [
+            'label' => $department->department_name,
+            'count' => (int) ($department->active_faculty_count ?? 0),
+        ]);
+    }
+
+    protected function getStudentEnrollmentTrend(int $limit = 6)
+    {
+        $years = AcademicYear::query()
+            ->whereNull('archived_at')
+            ->withCount(['students as active_students_count' => function ($query) {
+                $query->whereNull('archived_at');
+            }])
+            ->orderBy('school_year')
+            ->get();
+
+        $filtered = $years->filter(fn ($year) => ($year->active_students_count ?? 0) > 0);
+
+        if ($filtered->count() > $limit) {
+            $filtered = $filtered->slice($filtered->count() - $limit);
+        }
+
+        return $filtered->values()->map(fn ($year) => [
+            'label' => $year->school_year ?? 'N/A',
+            'count' => (int) ($year->active_students_count ?? 0),
+        ]);
     }
 
     public function getProfile()
