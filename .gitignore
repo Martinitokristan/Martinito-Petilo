@@ -4,6 +4,8 @@
 /storage/*.key
 /vendor
 /app/google/service-account.json
+/storage/logs/laravel.log
+/resources/js/app.js
 .env
 .env.backup
 .phpunit.result.cache
@@ -14,5 +16,3 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
-app/google/service-account.json
-
