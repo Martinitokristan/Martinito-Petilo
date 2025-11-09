@@ -4,8 +4,6 @@
 /storage/*.key
 /vendor
 /app/google/service-account.json
-/storage/logs/laravel.log
-/resources/js/app.js
 .env
 .env.backup
 .phpunit.result.cache
