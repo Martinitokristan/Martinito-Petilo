@@ -17809,3 +17809,243 @@ operable program or batch file.
 [2025-11-09 00:28:51] local.INFO: Students loaded successfully:  {"count":9} 
 [2025-11-09 00:29:51] local.INFO: Loading faculty with request:   
 [2025-11-09 00:29:51] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 01:06:10] local.INFO: Loading faculty with request:   
+[2025-11-09 01:06:10] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 01:06:24] local.INFO: Loading faculty with request:   
+[2025-11-09 01:06:24] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 01:06:57] local.INFO: Loading faculty with request:   
+[2025-11-09 01:06:57] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 01:07:25] local.INFO: Loading faculty with request:   
+[2025-11-09 01:07:25] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 01:07:30] local.INFO: Loading faculty with request:   
+[2025-11-09 01:07:30] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 01:07:34] local.INFO: Loading faculty with request:   
+[2025-11-09 01:07:34] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 01:08:12] local.INFO: Loading faculty with request:   
+[2025-11-09 01:08:12] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 01:08:15] local.INFO: Loading faculty with request:   
+[2025-11-09 01:08:15] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 01:08:39] local.INFO: Loading students with request:   
+[2025-11-09 01:08:39] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 01:08:39] local.INFO: Loading students with request:   
+[2025-11-09 01:08:39] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 01:08:47] local.INFO: Loading students with request:   
+[2025-11-09 01:08:47] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 01:09:23] local.INFO: Loading students with request:   
+[2025-11-09 01:09:23] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 01:09:23] local.INFO: Loading students with request:   
+[2025-11-09 01:09:23] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:43:29] local.INFO: Loading students with request:   
+[2025-11-09 02:43:29] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:43:30] local.INFO: Loading students with request:   
+[2025-11-09 02:43:30] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:43:52] local.INFO: Loading students with request:   
+[2025-11-09 02:43:52] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:43:54] local.INFO: Loading faculty with request:   
+[2025-11-09 02:43:54] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 02:44:05] local.INFO: Loading faculty with request:   
+[2025-11-09 02:44:05] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 02:45:07] local.INFO: Loading faculty with request:   
+[2025-11-09 02:45:07] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 02:45:11] local.INFO: Loading students with request:   
+[2025-11-09 02:45:11] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:45:11] local.INFO: Loading students with request:   
+[2025-11-09 02:45:11] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:45:16] local.INFO: Loading students with request:   
+[2025-11-09 02:45:16] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:45:39] local.INFO: Loading students with request:   
+[2025-11-09 02:45:39] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:45:40] local.INFO: Loading students with request:   
+[2025-11-09 02:45:40] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:45:47] local.INFO: Loading students with request:   
+[2025-11-09 02:45:47] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:54:52] local.INFO: Loading students with request:   
+[2025-11-09 02:54:52] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:54:52] local.INFO: Loading students with request:   
+[2025-11-09 02:54:53] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:55:10] local.INFO: Loading students with request:   
+[2025-11-09 02:55:10] local.INFO: Students loaded successfully:  {"count":9} 
+[2025-11-09 02:56:22] local.INFO: Loading students with request:   
+[2025-11-09 02:56:22] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 02:56:23] local.INFO: Loading students with request:   
+[2025-11-09 02:56:23] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 02:56:51] local.INFO: Request data: {"export":"google_sheets"} 
+[2025-11-09 02:56:58] local.INFO: ✅ Rows exported to Google Sheets tab. {"tab":"All Students Data"} 
+[2025-11-09 02:57:06] local.INFO: Request data: {"export":"json"} 
+[2025-11-09 02:57:12] local.INFO: Request data: {"course_id":"1","export":"json"} 
+[2025-11-09 02:57:16] local.INFO: Request data: {"course_id":"2","export":"json"} 
+[2025-11-09 02:57:20] local.INFO: Request data: {"course_id":"3","export":"json"} 
+[2025-11-09 02:57:23] local.INFO: Request data: {"course_id":"4","export":"json"} 
+[2025-11-09 02:57:26] local.INFO: Request data: {"course_id":"5","export":"json"} 
+[2025-11-09 02:57:30] local.INFO: Request data: {"course_id":"10","export":"json"} 
+[2025-11-09 02:57:34] local.INFO: Request data: {"course_id":"9","export":"json"} 
+[2025-11-09 02:58:08] local.INFO: Loading students with request:   
+[2025-11-09 02:58:08] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 02:58:09] local.INFO: Loading students with request:   
+[2025-11-09 02:58:09] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 02:58:10] local.INFO: Loading faculty with request:   
+[2025-11-09 02:58:10] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 02:58:20] local.INFO: Department head cleared {"faculty_id":"9"} 
+[2025-11-09 02:58:21] local.INFO: Loading faculty with request:   
+[2025-11-09 02:58:21] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 02:58:34] local.INFO: ✅ Rows exported to Google Sheets tab. {"tab":"All Faculty Data"} 
+[2025-11-09 02:58:59] local.INFO: Loading faculty with request:   
+[2025-11-09 02:58:59] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 02:59:05] local.INFO: Department head cleared {"faculty_id":"9"} 
+[2025-11-09 02:59:19] local.INFO: Loading faculty with request:   
+[2025-11-09 02:59:19] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 02:59:27] local.INFO: ✅ Rows exported to Google Sheets tab. {"tab":"All Faculty Data"} 
+[2025-11-09 02:59:52] local.INFO: Loading faculty with request:   
+[2025-11-09 02:59:52] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 04:10:06] local.INFO: Loading students with request:   
+[2025-11-09 04:10:06] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:10:06] local.INFO: Loading students with request:   
+[2025-11-09 04:10:06] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:10:14] local.INFO: Loading students with request:  {"department_id":"2"} 
+[2025-11-09 04:10:14] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:22:03] local.INFO: Loading students with request:   
+[2025-11-09 04:22:03] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:22:04] local.INFO: Loading students with request:   
+[2025-11-09 04:22:04] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:22:05] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:22:05] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:22:09] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:22:09] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:22:11] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:22:11] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:22:13] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:22:13] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:22:15] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:22:15] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:22:18] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:22:18] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:22:19] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:22:19] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:43:45] local.INFO: Loading students with request:   
+[2025-11-09 04:43:45] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:43:46] local.INFO: Loading students with request:   
+[2025-11-09 04:43:46] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:43:51] local.INFO: Loading faculty with request:   
+[2025-11-09 04:43:51] local.INFO: Faculty loaded successfully:  {"count":9} 
+[2025-11-09 04:43:52] local.INFO: Loading students with request:   
+[2025-11-09 04:43:52] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:43:53] local.INFO: Loading students with request:   
+[2025-11-09 04:43:53] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:44:06] local.INFO: Loading students with request:   
+[2025-11-09 04:44:06] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:44:13] local.INFO: Loading students with request:   
+[2025-11-09 04:44:13] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:45:14] local.INFO: Loading students with request:   
+[2025-11-09 04:45:14] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:45:14] local.INFO: Loading students with request:   
+[2025-11-09 04:45:14] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:45:16] local.INFO: Loading students with request:  {"department_id":"2"} 
+[2025-11-09 04:45:16] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:46:08] local.INFO: Loading students with request:   
+[2025-11-09 04:46:08] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:46:08] local.INFO: Loading students with request:   
+[2025-11-09 04:46:08] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:46:16] local.INFO: Loading students with request:   
+[2025-11-09 04:46:16] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:46:21] local.INFO: Loading students with request:   
+[2025-11-09 04:46:21] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:46:37] local.INFO: Loading students with request:   
+[2025-11-09 04:46:37] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:46:37] local.INFO: Loading students with request:   
+[2025-11-09 04:46:37] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:46:39] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:46:39] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:46:43] local.INFO: Loading students with request:  {"department_id":"2"} 
+[2025-11-09 04:46:43] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:46:45] local.INFO: Loading students with request:  {"department_id":"4"} 
+[2025-11-09 04:46:45] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:46:49] local.INFO: Loading students with request:  {"department_id":"2"} 
+[2025-11-09 04:46:49] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:46:50] local.INFO: Loading students with request:  {"department_id":"3"} 
+[2025-11-09 04:46:50] local.INFO: Students loaded successfully:  {"count":1} 
+[2025-11-09 04:46:55] local.INFO: Loading students with request:  {"department_id":"4"} 
+[2025-11-09 04:46:55] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:47:06] local.INFO: Loading students with request:   
+[2025-11-09 04:47:06] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:47:06] local.INFO: Loading students with request:   
+[2025-11-09 04:47:06] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:47:07] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:47:07] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:47:10] local.INFO: Loading students with request:  {"department_id":"2"} 
+[2025-11-09 04:47:10] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:47:11] local.INFO: Loading students with request:  {"department_id":"3"} 
+[2025-11-09 04:47:11] local.INFO: Students loaded successfully:  {"count":1} 
+[2025-11-09 04:47:13] local.INFO: Loading students with request:  {"department_id":"4"} 
+[2025-11-09 04:47:13] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:47:16] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:47:16] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:47:18] local.INFO: Loading students with request:  {"department_id":"4"} 
+[2025-11-09 04:47:18] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:47:19] local.INFO: Loading students with request:  {"department_id":"2"} 
+[2025-11-09 04:47:19] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:47:30] local.INFO: Loading students with request:   
+[2025-11-09 04:47:30] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:47:30] local.INFO: Loading students with request:   
+[2025-11-09 04:47:30] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:47:33] local.INFO: Loading students with request:  {"department_id":"2"} 
+[2025-11-09 04:47:33] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:48:12] local.INFO: Loading students with request:   
+[2025-11-09 04:48:12] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:48:12] local.INFO: Loading students with request:   
+[2025-11-09 04:48:12] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:48:17] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:48:17] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:48:18] local.INFO: Loading students with request:  {"department_id":"1","course_id":"1"} 
+[2025-11-09 04:48:18] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:48:21] local.INFO: Loading students with request:   
+[2025-11-09 04:48:21] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:48:23] local.INFO: Loading students with request:  {"department_id":"1","course_id":"1"} 
+[2025-11-09 04:48:23] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:48:29] local.INFO: Loading students with request:   
+[2025-11-09 04:48:30] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:48:32] local.INFO: Loading students with request:  {"department_id":"2"} 
+[2025-11-09 04:48:32] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:48:35] local.INFO: Loading students with request:  {"department_id":"2","course_id":"3"} 
+[2025-11-09 04:48:35] local.INFO: Students loaded successfully:  {"count":1} 
+[2025-11-09 04:48:38] local.INFO: Loading students with request:  {"department_id":"2","course_id":"4"} 
+[2025-11-09 04:48:38] local.INFO: Students loaded successfully:  {"count":0} 
+[2025-11-09 04:48:41] local.INFO: Loading students with request:  {"department_id":"2"} 
+[2025-11-09 04:48:41] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:48:43] local.INFO: Loading students with request:  {"department_id":"3"} 
+[2025-11-09 04:48:43] local.INFO: Students loaded successfully:  {"count":1} 
+[2025-11-09 04:48:47] local.INFO: Loading students with request:  {"department_id":"4"} 
+[2025-11-09 04:48:47] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:48:48] local.INFO: Loading students with request:  {"department_id":"4","course_id":"9"} 
+[2025-11-09 04:48:48] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:49:32] local.INFO: Loading students with request:   
+[2025-11-09 04:49:32] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:49:32] local.INFO: Loading students with request:   
+[2025-11-09 04:49:32] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:49:34] local.INFO: Loading students with request:  {"department_id":"2"} 
+[2025-11-09 04:49:34] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:49:36] local.INFO: Loading students with request:  {"department_id":"2","course_id":"2"} 
+[2025-11-09 04:49:36] local.INFO: Students loaded successfully:  {"count":1} 
+[2025-11-09 04:49:37] local.INFO: Loading students with request:  {"department_id":"2","course_id":"3"} 
+[2025-11-09 04:49:37] local.INFO: Students loaded successfully:  {"count":1} 
+[2025-11-09 04:49:39] local.INFO: Loading students with request:  {"department_id":"2","course_id":"4"} 
+[2025-11-09 04:49:39] local.INFO: Students loaded successfully:  {"count":0} 
+[2025-11-09 04:49:40] local.INFO: Loading students with request:   
+[2025-11-09 04:49:40] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:49:41] local.INFO: Loading students with request:  {"department_id":"4"} 
+[2025-11-09 04:49:41] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:49:43] local.INFO: Loading students with request:  {"department_id":"4","course_id":"9"} 
+[2025-11-09 04:49:43] local.INFO: Students loaded successfully:  {"count":2} 
+[2025-11-09 04:49:45] local.INFO: Loading students with request:   
+[2025-11-09 04:49:45] local.INFO: Students loaded successfully:  {"count":10} 
+[2025-11-09 04:49:47] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:49:47] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:49:48] local.INFO: Loading students with request:  {"department_id":"1","course_id":"1"} 
+[2025-11-09 04:49:48] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:49:50] local.INFO: Loading students with request:  {"department_id":"1","course_id":"5"} 
+[2025-11-09 04:49:50] local.INFO: Students loaded successfully:  {"count":0} 
+[2025-11-09 04:49:51] local.INFO: Loading students with request:  {"department_id":"1","course_id":"6"} 
+[2025-11-09 04:49:51] local.INFO: Students loaded successfully:  {"count":0} 
+[2025-11-09 04:49:52] local.INFO: Loading students with request:  {"department_id":"1"} 
+[2025-11-09 04:49:52] local.INFO: Students loaded successfully:  {"count":5} 
+[2025-11-09 04:49:55] local.INFO: Loading faculty with request:   
+[2025-11-09 04:49:55] local.INFO: Faculty loaded successfully:  {"count":9} 

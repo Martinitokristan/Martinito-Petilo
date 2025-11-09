@@ -9,10 +9,11 @@ use App\Models\Course;
 use App\Models\Department;
 use App\Models\AcademicYear;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -32,9 +33,19 @@ class AdminController extends Controller
         $currentAcademicYear = $this->getCurrentAcademicYear();
         $courseDistribution = $this->prepareStudentsByCourseData($currentAcademicYear);
 
+        $studentTotals = [
+            'overall' => StudentProfile::whereNull('archived_at')->count(),
+        ];
+        $facultyTotals = [
+            'overall' => FacultyProfile::whereNull('archived_at')->count(),
+        ];
+
+        $studentGrowth = $this->getStudentGrowthSummary($currentAcademicYear);
+        $studentTotals['current_academic_year'] = $studentGrowth['current_total'];
+
         $data = [
-            'total_students' => StudentProfile::whereNull('archived_at')->count(),
-            'total_faculty' => FacultyProfile::whereNull('archived_at')->count(),
+            'total_students' => $studentTotals['overall'],
+            'total_faculty' => $facultyTotals['overall'],
             'total_courses' => Course::whereNull('archived_at')->count(),
             'total_departments' => Department::whereNull('archived_at')->count(),
             'current_academic_year' => optional($currentAcademicYear)->school_year,
@@ -42,6 +53,11 @@ class AdminController extends Controller
             'students_by_course' => $courseDistribution['courses'],
             'faculty_by_department' => $this->getFacultyByDepartment(),
             'students_over_time' => $this->getStudentEnrollmentTrend(),
+            'student_growth' => $studentGrowth,
+            'student_status_breakdown' => $this->getStatusBreakdown(StudentProfile::class, ['active', 'inactive', 'graduated', 'dropped']),
+            'faculty_status_breakdown' => $this->getStatusBreakdown(FacultyProfile::class, ['active', 'inactive']),
+            'top_departments' => $this->getTopDepartmentsByEnrollment(),
+            'top_courses' => $this->getTopCoursesByEnrollment(),
         ];
 
         return response()->json($data);
@@ -149,6 +165,116 @@ class AdminController extends Controller
             'label' => $year->school_year ?? 'N/A',
             'count' => (int) ($year->active_students_count ?? 0),
         ]);
+    }
+
+    protected function getStudentGrowthSummary(?AcademicYear $currentAcademicYear): array
+    {
+        $currentYear = $currentAcademicYear;
+        $previousYear = $this->getPreviousAcademicYear($currentYear);
+
+        $currentTotal = $currentYear
+            ? StudentProfile::query()
+                ->whereNull('archived_at')
+                ->where('academic_year_id', $currentYear->academic_year_id)
+                ->count()
+            : StudentProfile::whereNull('archived_at')->count();
+
+        $previousTotal = $previousYear
+            ? StudentProfile::query()
+                ->whereNull('archived_at')
+                ->where('academic_year_id', $previousYear->academic_year_id)
+                ->count()
+            : 0;
+
+        return [
+            'current_total' => $currentTotal,
+            'previous_total' => $previousTotal,
+            'current_label' => optional($currentYear)->school_year,
+            'previous_label' => optional($previousYear)->school_year,
+            'percent_change' => $this->calculatePercentChange($previousTotal, $currentTotal),
+        ];
+    }
+
+    protected function getPreviousAcademicYear(?AcademicYear $currentAcademicYear): ?AcademicYear
+    {
+        if (!$currentAcademicYear) {
+            return null;
+        }
+
+        return AcademicYear::query()
+            ->whereNull('archived_at')
+            ->where('academic_year_id', '<>', $currentAcademicYear->academic_year_id)
+            ->orderByDesc('school_year')
+            ->first();
+    }
+
+    protected function calculatePercentChange(int $previous, int $current): float
+    {
+        if ($previous === 0) {
+            return $current > 0 ? 100.0 : 0.0;
+        }
+
+        return round((($current - $previous) / $previous) * 100, 2);
+    }
+
+    /**
+     * @param class-string $modelClass
+     */
+    protected function getStatusBreakdown(string $modelClass, array $expectedStatuses): array
+    {
+        $query = $modelClass::query()
+            ->select('status', DB::raw('COUNT(*) as total'))
+            ->whereNull('archived_at')
+            ->groupBy('status');
+
+        $results = $query->pluck('total', 'status')->toArray();
+
+        $formatted = [];
+        foreach ($expectedStatuses as $status) {
+            $formatted[$status] = (int) ($results[$status] ?? 0);
+        }
+
+        ksort($formatted);
+
+        return $formatted;
+    }
+
+    protected function getTopDepartmentsByEnrollment(int $limit = 3): array
+    {
+        return Department::query()
+            ->whereNull('archived_at')
+            ->withCount(['students as active_students_count' => function ($query) {
+                $query->whereNull('archived_at');
+            }])
+            ->orderByDesc('active_students_count')
+            ->take($limit)
+            ->get()
+            ->map(fn ($department) => [
+                'department_id' => $department->department_id,
+                'name' => $department->department_name,
+                'active_students' => (int) ($department->active_students_count ?? 0),
+            ])
+            ->toArray();
+    }
+
+    protected function getTopCoursesByEnrollment(int $limit = 3): array
+    {
+        return Course::query()
+            ->whereNull('archived_at')
+            ->with(['department'])
+            ->withCount(['students as active_students_count' => function ($query) {
+                $query->whereNull('archived_at');
+            }])
+            ->orderByDesc('active_students_count')
+            ->take($limit)
+            ->get()
+            ->map(fn ($course) => [
+                'course_id' => $course->course_id,
+                'name' => $course->course_name,
+                'department_name' => optional($course->department)->department_name,
+                'active_students' => (int) ($course->active_students_count ?? 0),
+            ])
+            ->toArray();
     }
 
     public function getProfile()

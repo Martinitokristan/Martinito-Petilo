@@ -40,6 +40,11 @@ function Dashboard() {
         students_by_course: [],
         faculty_by_department: [],
         students_over_time: [],
+        student_growth: null,
+        student_status_breakdown: {},
+        faculty_status_breakdown: {},
+        top_departments: [],
+        idle_courses: [],
     });
     const [error, setError] = useState("");
 
@@ -124,7 +129,7 @@ function Dashboard() {
                     </div>
                     <div className="stat-info">
                         <span className="stat-label">Students</span>
-                        <span className="stat-value">{stats.total_students}</span>
+                        <span className="stat-value">{formatEnrolleeCount(stats.total_students)}</span>
                     </div>
                 </div>
 
@@ -134,7 +139,7 @@ function Dashboard() {
                     </div>
                     <div className="stat-info">
                         <span className="stat-label">Faculty</span>
-                        <span className="stat-value">{stats.total_faculty}</span>
+                        <span className="stat-value">{formatEnrolleeCount(stats.total_faculty)}</span>
                     </div>
                 </div>
 
@@ -144,7 +149,7 @@ function Dashboard() {
                     </div>
                     <div className="stat-info">
                         <span className="stat-label">Departments</span>
-                        <span className="stat-value">{stats.total_departments}</span>
+                        <span className="stat-value">{formatEnrolleeCount(stats.total_departments)}</span>
                     </div>
                 </div>
 
@@ -154,7 +159,7 @@ function Dashboard() {
                     </div>
                     <div className="stat-info">
                         <span className="stat-label">Courses</span>
-                        <span className="stat-value">{stats.total_courses}</span>
+                        <span className="stat-value">{formatEnrolleeCount(stats.total_courses)}</span>
                     </div>
                 </div>
             </section>
@@ -324,6 +329,46 @@ function Dashboard() {
                     </div>
                 </div>
             </div>
+
+            <section className="status-panels">
+                <div className="status-card">
+                    <h3>Top Departments</h3>
+                    <ul className="summary-list">
+                        {stats.top_departments?.length ? (
+                            stats.top_departments.map((dept) => (
+                                <li key={dept.department_id}>
+                                    <span>{dept.name}</span>
+                                    <span className="summary-value">{formatEnrolleeCount(dept.active_students)} students</span>
+                                </li>
+                            ))
+                        ) : (
+                            <li className="empty">No departments found</li>
+                        )}
+                    </ul>
+                </div>
+                <div className="status-card">
+                    <h3>Top Courses by Enrollees</h3>
+                    <ul className="summary-list">
+                        {stats.top_courses?.length ? (
+                            stats.top_courses.map((course) => (
+                                <li key={course.course_id}>
+                                    <span>
+                                        {course.name}
+                                        {course.department_name
+                                            ? ` (${course.department_name})`
+                                            : ""}
+                                    </span>
+                                    <span className="summary-value">
+                                        {formatEnrolleeCount(course.active_students)} students
+                                    </span>
+                                </li>
+                            ))
+                        ) : (
+                            <li className="empty">No enrolment data available</li>
+                        )}
+                    </ul>
+                </div>
+            </section>
         </div>
     );
 }
