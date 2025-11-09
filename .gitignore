@@ -5,7 +5,9 @@
 /vendor
 /app/google/service-account.json
 /storage/logs/laravel.log
-/resources/js/app.js
+/public/js/
+/public/css/
+/public/mix-manifest.json
 .env
 .env.backup
 .phpunit.result.cache
