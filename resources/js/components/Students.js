@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
 import "../../sass/students.scss";
-import { formatWithAcronym } from "./format";
+import { formatWithAcronym, generateInstitutionEmail } from "./format";
 
 const getCsrfCookie = async () => {
     try {
@@ -53,6 +53,7 @@ function Students() {
         year_level: "1st",
     };
     const [form, setForm] = useState(initialFormState);
+    const [emailManuallyEdited, setEmailManuallyEdited] = useState(false);
     const [emailWarning, setEmailWarning] = useState("");
     const [regions, setRegions] = useState([]);
     const [provinces, setProvinces] = useState([]);
@@ -239,6 +240,7 @@ function Students() {
         setShowForm(true);
         setModalContentState("form");
         setForm({ ...initialFormState });
+        setEmailManuallyEdited(false);
         setEmailWarning("");
         setError("");
         setSelectedRegionCode("");
@@ -285,6 +287,7 @@ function Students() {
             academic_year_id: student.academic_year_id || "",
             year_level: student.year_level || "1st",
         });
+        setEmailManuallyEdited(true);
         setEmailWarning("");
         setSelectedProvinceCode("");
         setSelectedMunicipalityCode("");
@@ -343,8 +346,43 @@ function Students() {
     };
 
     const handleEmailChange = (value) => {
+        setEmailManuallyEdited(true);
         setForm((prev) => ({ ...prev, email_address: value }));
         validateDuplicateEmail(value, editingId);
+    };
+
+    const handleFirstNameChange = (value) => {
+        const shouldAutoEmail = !emailManuallyEdited && !editingId;
+        const generatedEmail = shouldAutoEmail
+            ? generateInstitutionEmail(value, form.l_name)
+            : "";
+
+        setForm((prev) => ({
+            ...prev,
+            f_name: value,
+            ...(shouldAutoEmail ? { email_address: generatedEmail } : {}),
+        }));
+
+        if (shouldAutoEmail) {
+            validateDuplicateEmail(generatedEmail, editingId);
+        }
+    };
+
+    const handleLastNameChange = (value) => {
+        const shouldAutoEmail = !emailManuallyEdited && !editingId;
+        const generatedEmail = shouldAutoEmail
+            ? generateInstitutionEmail(form.f_name, value)
+            : "";
+
+        setForm((prev) => ({
+            ...prev,
+            l_name: value,
+            ...(shouldAutoEmail ? { email_address: generatedEmail } : {}),
+        }));
+
+        if (shouldAutoEmail) {
+            validateDuplicateEmail(generatedEmail, editingId);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -443,6 +481,7 @@ function Students() {
         setError("");
         setForm({ ...initialFormState });
         setSelectedRegionCode("");
+        setEmailManuallyEdited(false);
         setSelectedProvinceCode("");
         setSelectedMunicipalityCode("");
         setProvinces([]);
@@ -627,7 +666,7 @@ function Students() {
                             placeholder="First Name"
                             value={form.f_name}
                             onChange={(e) =>
-                                setForm({ ...form, f_name: e.target.value })
+                                handleFirstNameChange(e.target.value)
                             }
                             required
                         />
@@ -648,7 +687,7 @@ function Students() {
                             placeholder="Last Name"
                             value={form.l_name}
                             onChange={(e) =>
-                                setForm({ ...form, l_name: e.target.value })
+                                handleLastNameChange(e.target.value)
                             }
                             required
                         />

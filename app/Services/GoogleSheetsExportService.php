@@ -7,6 +7,7 @@ use Google\Service\Sheets;
 use Google\Service\Exception as GoogleServiceException;
 use Google\Service\Sheets\ClearValuesRequest;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class GoogleSheetsExportService
@@ -330,6 +331,37 @@ class GoogleSheetsExportService
         return "'{$escaped}'" . ($rangePart ? "!{$rangePart}" : '');
     }
 
+    private function sanitizeNameSegment(?string $value): string
+    {
+        $normalized = Str::lower(Str::ascii($value ?? ''));
+
+        $segment = preg_replace('/[^a-z]/', '', $normalized);
+
+        return $segment ?? '';
+    }
+
+    private function generateInstitutionEmail(?string $firstName, ?string $lastName): ?string
+    {
+        $first = trim((string) $firstName);
+        $last = trim((string) $lastName);
+
+        if ($first === '' || $last === '') {
+            return null;
+        }
+
+        $firstToken = preg_split('/\s+/', $first)[0] ?? '';
+        $lastToken = preg_replace('/\s+/', '', $last);
+
+        $firstSegment = $this->sanitizeNameSegment($firstToken);
+        $lastSegment = $this->sanitizeNameSegment($lastToken);
+
+        if ($firstSegment === '' || $lastSegment === '') {
+            return null;
+        }
+
+        return "{$firstSegment}.{$lastSegment}@mpedutech.edu.ph";
+    }
+
     public function importStudentsFromSheet($spreadsheetId, ?string $sheetName = null)
     {
         if (!$spreadsheetId) {
@@ -349,10 +381,29 @@ class GoogleSheetsExportService
         $duplicateEmails = [];
         $seenEmails = [];
 
+        $normalizeOptional = static function ($value) {
+            if ($value === null) {
+                return null;
+            }
+
+            $trimmed = trim((string) $value);
+            if ($trimmed === '') {
+                return null;
+            }
+
+            try {
+                return Carbon::parse($trimmed);
+            } catch (\Throwable $e) {
+                return $trimmed;
+            }
+        };
+
         foreach ($rows as $index => $row) {
             if (empty(array_filter($row, fn ($value) => $value !== null && $value !== ''))) {
                 continue; // skip blank rows
             }
+
+            $sheetRow = $index + 2; // account for header row
 
             $originalColumnCount = count($row);
             if ($originalColumnCount < 22) {
@@ -445,14 +496,21 @@ class GoogleSheetsExportService
                 }
             }
 
-            $course = null;
             $courseReference = isset($row[$idx['course']]) ? trim((string) $row[$idx['course']]) : null;
-            if ($courseReference !== null && $courseReference !== '') {
-                if (is_numeric($courseReference)) {
-                    $course = \App\Models\Course::find($courseReference);
-                } else {
-                    $course = \App\Models\Course::where('course_name', $courseReference)->first();
-                }
+            if ($courseReference === null || $courseReference === '') {
+                $errors[] = "Row {$sheetRow}: Course value is required for import.";
+                continue;
+            }
+
+            if (is_numeric($courseReference)) {
+                $course = \App\Models\Course::find($courseReference);
+            } else {
+                $course = \App\Models\Course::where('course_name', $courseReference)->first();
+            }
+
+            if (!$course) {
+                $errors[] = "Row {$sheetRow}: Unable to find a course matching '{$courseReference}'.";
+                continue;
             }
 
             $academicYear = null;
@@ -493,12 +551,12 @@ class GoogleSheetsExportService
                 : ($rawYearLevel !== '' ? $rawYearLevel : null);
 
             $studentId = $row[$idx['student_id']] ?? null;
-            $email = strtolower(trim($row[$idx['email']] ?? ''));
+            $email = $this->generateInstitutionEmail($row[$idx['f_name']] ?? null, $row[$idx['l_name']] ?? null);
 
-            if ($email !== '') {
+            if ($email !== null) {
                 if (isset($seenEmails[$email])) {
                     $duplicateEmails[$email] = true;
-                    $errors[] = "Duplicate email '{$email}' found in spreadsheet rows {$seenEmails[$email]} and {$sheetRow}.";
+                    $errors[] = "Generated email '{$email}' is duplicated in spreadsheet rows {$seenEmails[$email]} and {$sheetRow}.";
                     continue;
                 }
                 $seenEmails[$email] = $sheetRow;
@@ -510,19 +568,19 @@ class GoogleSheetsExportService
                 $existingEmailOwner = $existsQuery->first();
                 if ($existingEmailOwner) {
                     $duplicateEmails[$email] = true;
-                    $errors[] = "Email '{$email}' already belongs to student ID {$existingEmailOwner->student_id}.";
+                    $errors[] = "Generated email '{$email}' already belongs to student ID {$existingEmailOwner->student_id}.";
                     continue;
                 }
             }
 
             if ($rawSex === '') {
-                $errors[] = "Row {$sheetRow}: Missing sex value.";
+                $errors[] = "Row " . ($index + 2) . ": Missing sex value.";
                 continue;
             }
 
             $providedSexValue = $row[$idx['sex']] ?? '';
             if (!array_key_exists($rawSex, $sexMap)) {
-                $errors[] = "Row {$sheetRow}: Invalid sex value '{$providedSexValue}'. Allowed: male, female, other.";
+                $errors[] = "Row " . ($index + 2) . ": Invalid sex value '{$providedSexValue}'. Allowed: male, female, other.";
                 continue;
             }
 
@@ -563,7 +621,7 @@ class GoogleSheetsExportService
                     $updated++;
                 }
             } catch (\Throwable $e) {
-                $errors[] = "Row {$sheetRow}: " . $e->getMessage();
+                $errors[] = "Row " . ($index + 2) . ": " . $e->getMessage();
             }
         }
 
@@ -618,7 +676,7 @@ class GoogleSheetsExportService
             }
         }
 
-        $range = $this->buildRange($resolvedSheet, 'A2:Z');
+        $range = $this->buildRange($resolvedSheet, 'A2:V');
 
         $response = $service->spreadsheets_values->get($spreadsheetId, $range);
         $rows = $response->getValues();
@@ -634,11 +692,16 @@ class GoogleSheetsExportService
                 return null;
             }
 
-            if (is_string($value)) {
-                $value = trim($value);
+            $trimmed = trim((string) $value);
+            if ($trimmed === '') {
+                return null;
             }
 
-            return $value === '' ? null : $value;
+            try {
+                return Carbon::parse($trimmed);
+            } catch (\Throwable $e) {
+                return $trimmed;
+            }
         };
 
         foreach ($rows as $index => $row) {
@@ -646,9 +709,11 @@ class GoogleSheetsExportService
                 continue; // skip blank rows
             }
 
+            $sheetRow = $index + 2; // account for header row
+
             $originalColumnCount = count($row);
-            if ($originalColumnCount < 20) {
-                $row = array_pad($row, 20, null);
+            if ($originalColumnCount < 22) {
+                $row = array_pad($row, 22, null);
             }
 
             $withAgeIdx = [
@@ -669,9 +734,12 @@ class GoogleSheetsExportService
                 'position' => 14,
                 'status' => 15,
                 'department' => 16,
-                'created_at' => 17,
-                'updated_at' => 18,
-                'archived_at' => 19,
+                'course' => 17,
+                'academic_year' => 18,
+                'year_level' => 19,
+                'created_at' => 20,
+                'updated_at' => 21,
+                'archived_at' => 22,
             ];
 
             $legacyIdx = [
@@ -691,9 +759,12 @@ class GoogleSheetsExportService
                 'position' => 10,
                 'status' => 11,
                 'department' => 12,
-                'created_at' => 13,
-                'updated_at' => 14,
-                'archived_at' => 15,
+                'course' => 13,
+                'academic_year' => 14,
+                'year_level' => 15,
+                'created_at' => 16,
+                'updated_at' => 17,
+                'archived_at' => 18,
             ];
 
             $sexMap = [
@@ -717,20 +788,9 @@ class GoogleSheetsExportService
                 $hasAgeColumn = false;
                 $rawSex = $sexCandidateLegacy;
             } else {
-                $hasAgeColumn = $originalColumnCount >= 20;
+                $hasAgeColumn = $originalColumnCount >= 19;
                 $idx = $hasAgeColumn ? $withAgeIdx : $legacyIdx;
                 $rawSex = strtolower(trim((string) ($row[$idx['sex']] ?? '')));
-            }
-
-            $normalizedSex = $rawSex !== '' && isset($sexMap[$rawSex]) ? $sexMap[$rawSex] : null;
-
-            $ageValue = null;
-            if ($hasAgeColumn) {
-                $candidateAge = $row[$withAgeIdx['age']] ?? null;
-                if (is_string($candidateAge)) {
-                    $candidateAge = trim($candidateAge);
-                }
-                $ageValue = $candidateAge === '' ? null : $candidateAge;
             }
 
             $department = null;
@@ -743,6 +803,26 @@ class GoogleSheetsExportService
                 }
             }
 
+            $course = null;
+            $courseReference = isset($row[$idx['course']]) ? trim((string) $row[$idx['course']]) : null;
+            if ($courseReference !== null && $courseReference !== '') {
+                if (is_numeric($courseReference)) {
+                    $course = \App\Models\Course::find($courseReference);
+                } else {
+                    $course = \App\Models\Course::where('course_name', $courseReference)->first();
+                }
+            }
+
+            $academicYear = null;
+            $yearReference = isset($row[$idx['academic_year']]) ? trim((string) $row[$idx['academic_year']]) : null;
+            if ($yearReference !== null && $yearReference !== '') {
+                if (is_numeric($yearReference)) {
+                    $academicYear = \App\Models\AcademicYear::find($yearReference);
+                } else {
+                    $academicYear = \App\Models\AcademicYear::where('school_year', $yearReference)->first();
+                }
+            }
+
             $rawPhone = isset($row[$idx['phone']]) ? trim($row[$idx['phone']]) : '';
             if (preg_match('/^9\d{9}$/', $rawPhone)) {
                 $phone_number = '0' . $rawPhone;
@@ -752,14 +832,31 @@ class GoogleSheetsExportService
                 $phone_number = $rawPhone;
             }
 
-            $sheetRow = $index + 2;
-            $facultyId = $row[$idx['faculty_id']] ?? null;
-            $email = strtolower(trim((string) ($row[$idx['email']] ?? '')));
+            $rawYearLevel = isset($row[$idx['year_level']]) ? trim((string) $row[$idx['year_level']]) : null;
+            $normalizedYearLevel = $rawYearLevel !== null && $rawYearLevel !== ''
+                ? strtolower(preg_replace('/\s+/', '', $rawYearLevel))
+                : null;
+            $yearLevelMap = [
+                '1' => '1st',
+                '1st' => '1st',
+                '2' => '2nd',
+                '2nd' => '2nd',
+                '3' => '3rd',
+                '3rd' => '3rd',
+                '4' => '4th',
+                '4th' => '4th',
+            ];
+            $year_level = $normalizedYearLevel !== null && isset($yearLevelMap[$normalizedYearLevel])
+                ? $yearLevelMap[$normalizedYearLevel]
+                : ($rawYearLevel !== '' ? $rawYearLevel : null);
 
-            if ($email !== '') {
+            $facultyId = $row[$idx['faculty_id']] ?? null;
+            $email = $this->generateInstitutionEmail($row[$idx['f_name']] ?? null, $row[$idx['l_name']] ?? null);
+
+            if ($email !== null) {
                 if (isset($seenEmails[$email])) {
                     $duplicateEmails[$email] = true;
-                    $errors[] = "Duplicate email '{$email}' found in spreadsheet rows {$seenEmails[$email]} and {$sheetRow}.";
+                    $errors[] = "Generated email '{$email}' is duplicated in spreadsheet rows {$seenEmails[$email]} and {$sheetRow}.";
                     continue;
                 }
                 $seenEmails[$email] = $sheetRow;
@@ -771,44 +868,46 @@ class GoogleSheetsExportService
                 $existingEmailOwner = $existsQuery->first();
                 if ($existingEmailOwner) {
                     $duplicateEmails[$email] = true;
-                    $errors[] = "Email '{$email}' already belongs to faculty ID {$existingEmailOwner->faculty_id}.";
+                    $errors[] = "Generated email '{$email}' already belongs to faculty ID {$existingEmailOwner->faculty_id}.";
                     continue;
                 }
             }
 
-            if ($normalizedSex === null) {
-                $providedSex = trim((string) ($row[$idx['sex']] ?? ''));
-                if ($providedSex === '') {
-                    $errors[] = "Row {$sheetRow}: Missing sex value.";
-                } else {
-                    $errors[] = "Row {$sheetRow}: Invalid sex value '{$providedSex}'. Allowed: male, female, other.";
-                }
+            if ($rawSex === '') {
+                $errors[] = "Row " . ($index + 2) . ": Missing sex value.";
                 continue;
             }
 
-            $dateOfBirth = $normalizeOptional($row[$idx['date_of_birth']] ?? null);
+            $providedSexValue = $row[$idx['sex']] ?? '';
+            if (!array_key_exists($rawSex, $sexMap)) {
+                $errors[] = "Row " . ($index + 2) . ": Invalid sex value '{$providedSexValue}'. Allowed: male, female, other.";
+                continue;
+            }
+
+            $dateOfBirth = $row[$idx['date_of_birth']] ?? null;
+            $ageValue = $row[$idx['age']] ?? null;
             $resolvedAge = $this->resolveAge($dateOfBirth, $ageValue);
             if ($resolvedAge === '') {
                 $resolvedAge = null;
             }
 
             $facultyData = [
-                'faculty_id'    => $facultyId,
-                'f_name'        => $row[$idx['f_name']] ?? '',
-                'm_name'        => $row[$idx['m_name']] ?? '',
-                'l_name'        => $row[$idx['l_name']] ?? '',
-                'suffix'        => $row[$idx['suffix']] ?? '',
+                'faculty_id' => $facultyId,
+                'f_name' => $row[$idx['f_name']] ?? '',
+                'm_name' => $row[$idx['m_name']] ?? '',
+                'l_name' => $row[$idx['l_name']] ?? '',
+                'suffix' => $row[$idx['suffix']] ?? '',
                 'date_of_birth' => $dateOfBirth,
-                'age'           => $resolvedAge,
-                'sex'           => $normalizedSex,
-                'phone_number'  => $phone_number,
+                'age' => $resolvedAge,
+                'sex' => $row[$idx['sex']] ?? '',
+                'phone_number' => $phone_number,
                 'email_address' => $email,
-                'address'       => $row[$idx['address']] ?? '',
-                'region'        => $idx['region'] !== null ? $normalizeOptional($row[$idx['region']] ?? null) : null,
-                'province'      => $idx['province'] !== null ? $normalizeOptional($row[$idx['province']] ?? null) : null,
-                'municipality'  => $idx['municipality'] !== null ? $normalizeOptional($row[$idx['municipality']] ?? null) : null,
-                'position'      => $row[$idx['position']] ?? '',
-                'status'        => $row[$idx['status']] ?? '',
+                'address' => $row[$idx['address']] ?? '',
+                'region' => $idx['region'] !== null ? ($row[$idx['region']] ?? '') : '',
+                'province' => $idx['province'] !== null ? ($row[$idx['province']] ?? '') : '',
+                'municipality' => $idx['municipality'] !== null ? ($row[$idx['municipality']] ?? '') : '',
+                'position' => $row[$idx['position']] ?? '',
+                'status' => $row[$idx['status']] ?? '',
                 'department_id' => $department ? $department->department_id : null,
                 'created_at'    => $normalizeOptional($row[$idx['created_at']] ?? null),
                 'updated_at'    => $normalizeOptional($row[$idx['updated_at']] ?? null),

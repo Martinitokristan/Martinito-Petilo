@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FiFileText, FiCloud, FiLock } from "react-icons/fi"; // Add FiLock for disabled icon
+import { FiFileText, FiCloud, FiLock, FiXCircle } from "react-icons/fi"; // Add FiLock for disabled icon
 import "../../sass/report.scss";
 
 // Secure helper — ensure Sanctum cookie exists before requests
@@ -301,6 +301,13 @@ function Report() {
         }
     };
 
+    const handleClearReport = () => {
+        setTableColumns([]);
+        setTableRows([]);
+        setModalState("");
+        setModalMessage("");
+    };
+
     // Modal content for success/error/loading
     const renderModalContent = () => {
         if (modalState === "loading") {
@@ -406,6 +413,16 @@ function Report() {
                         <p className="page-subtitle">
                             Generate student or faculty reports
                         </p>
+                    </div>
+                    <div className="page-header-actions">
+                        <button
+                            className="btn btn-primary clear-report-btn"
+                            onClick={handleClearReport}
+                            disabled={!hasTableData || loading || exporting}
+                        >
+                            <FiXCircle />
+                            Clear Report
+                        </button>
                     </div>
                 </header>
 
