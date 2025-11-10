@@ -183,7 +183,7 @@ function Dashboard() {
                                 )}
                         </div>
                     </div>
-                    <ResponsiveContainer width="100%" height={340}>
+                    <ResponsiveContainer className="chart-body chart-body--bar" width="100%" height={340}>
                         <BarChart
                             data={stats.students_by_course.map((item) => ({
                                 ...item,
@@ -207,18 +207,18 @@ function Dashboard() {
                 <div className="chart-card">
                     <div className="chart-header">
                         <h3>Faculty per Department</h3>
-                        <p className="chart-subtitle">
-                            Active faculty members across departments
-                        </p>
                     </div>
-                    <ResponsiveContainer width="100%" height={340}>
+                    <p className="chart-subtitle">
+                        Distribution for {stats.faculty_distribution_year || stats.current_academic_year}
+                    </p>
+                    <ResponsiveContainer className="chart-body chart-body--pie" width="100%" height={340}>
                         <PieChart>
                             <Pie
                                 data={stats.faculty_by_department.map((item) => ({
                                     ...item,
                                     label: extractAcronym(item.label) || item.label,
                                 }))}
-                                cx="50%"
+                                cx="42%"
                                 cy="50%"
                                 innerRadius={65}
                                 outerRadius={120}
@@ -322,7 +322,7 @@ function Dashboard() {
                                 </ul>
                             ) : (
                                 <div className="legend-empty">
-                                    No enrolment records available yet.
+                                    No enrollment records available yet.
                                 </div>
                             )}
                         </div>
@@ -337,7 +337,9 @@ function Dashboard() {
                         {stats.top_departments?.length ? (
                             stats.top_departments.map((dept) => (
                                 <li key={dept.department_id}>
-                                    <span>{dept.name}</span>
+                                    <div className="summary-details">
+                                        <span className="summary-title">{dept.name}</span>
+                                    </div>
                                     <span className="summary-value">{formatEnrolleeCount(dept.active_students)} students</span>
                                 </li>
                             ))
@@ -352,12 +354,9 @@ function Dashboard() {
                         {stats.top_courses?.length ? (
                             stats.top_courses.map((course) => (
                                 <li key={course.course_id}>
-                                    <span>
-                                        {course.name}
-                                        {course.department_name
-                                            ? ` (${course.department_name})`
-                                            : ""}
-                                    </span>
+                                    <div className="summary-details">
+                                        <span className="summary-title">{course.name}</span>
+                                    </div>
                                     <span className="summary-value">
                                         {formatEnrolleeCount(course.active_students)} students
                                     </span>

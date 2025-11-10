@@ -23,12 +23,9 @@ body {
     font-family: "Nunito", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-image: url("/images/BG-login.jpg");
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-attachment: fixed;
+    background-color: #000;
     min-height: 100vh;
+    min-width: 100%;
     position: relative;
     overflow-x: hidden;
 
@@ -47,13 +44,19 @@ body {
 // Landing Page
 .landing-page {
     min-height: 100vh;
+    min-width: 100%;
     display: flex;
     flex-direction: column;
+    background-image: url("/images/BG-login.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: scroll;
 }
 
 // Header
 .header {
-    background-color: #d9d9d9bf;
+    background-color: #a2a2a3bf;
     padding: 1rem 2rem;
     box-shadow: $shadow-sm;
     position: relative;
@@ -72,7 +75,7 @@ body {
         font-size: 1.5rem;
         font-weight: 600;
         color: $text-dark;
-        margin-left: -7rem; // moved closer to screen edge for perfect alignment
+        margin-left: -7rem; // moved `lignment
     }
 
     .btn-admin-login {
@@ -86,6 +89,9 @@ body {
         cursor: pointer;
         transition: all 0.3s ease;
         box-shadow: $shadow-md;
+        position: relative;
+        right: -7rem; /* Moves the button 7rem to the right from its normal position */
+        margin-left: auto; /* Pushes the button to the right */
 
         &:hover {
             background-color: $primary-hover;
@@ -143,16 +149,17 @@ body {
 
 // Footer
 .footer {
-    background-color: #d9d9d9bf;
-    padding: 1.5rem 2rem;
-    color: #ffffff;
+    background-color: #a2a2a3bf;
+    padding: 1rem 2rem;
+    color: #000000;
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
 
     .footer-container {
         max-width: 1200px;
         width: 100%;
+        margin: 0 auto;
         display: flex;
         justify-content: flex-start;
         align-items: center;
@@ -160,25 +167,41 @@ body {
 
     .contact-info {
         text-align: left;
-        margin-left: 2rem; // ensures footer text aligns visually with logo above
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        margin-left: -7rem; // align with header logo offset
 
         .contact-label {
             font-weight: 600;
             font-size: 1rem;
-            margin-bottom: 0.5rem;
-            color: #ffffff;
+            letter-spacing: 0.05rem;
         }
 
-        .contact-detail {
+        .contact-detail,
+        .contact-email,
+        .contact-copyright {
             font-size: 0.875rem;
-            margin: 0.25rem 0;
-            color: #ffffff;
+            margin: 0;
         }
 
-        .copyright {
-            font-size: 0.75rem;
-            color: #ffffff;
-            margin-top: 0.5rem;
+        .contact-copyright {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+    }
+}
+
+@media (max-width: 1024px) {
+    .footer {
+        padding: 1rem 1.5rem;
+
+        .footer-container {
+            max-width: 100%;
+        }
+
+        .contact-info {
+            margin-left: 0;
         }
     }
 }
@@ -199,7 +222,7 @@ body {
 }
 
 .modal-card.login-modal-card {
-    background-color: #ffffff;
+    background-color: #F3F4FF;
     border-radius: 18px;
     width: 100%;
     max-width: 520px;

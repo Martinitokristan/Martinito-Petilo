@@ -118,12 +118,14 @@ function Login() {
             <footer className="footer">
                 <div className="footer-container">
                     <div className="contact-info">
-                        <p className="contact-label">CONTACT US:</p>
                         <p className="contact-detail">
-                            Tel Nos: +63 9639126633
+                            Contact Us: Tel Nos: +63 9639126633
                         </p>
                         <p className="contact-email">
                             Email: AKademi@edutech.com
+                        </p>
+                        <p className="contact-copyright">
+                            © GECDesigns | Images use in this site courtesy of EducTech management office
                         </p>
                     </div>
                 </div>

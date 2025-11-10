@@ -56,8 +56,18 @@
 
 .new-btn {
     position: absolute;
-    right: 40px;
+    right: 50px;
     top: 32px;
+}
+
+.new-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 32px rgba(99, 102, 241, 0.25);
+}
+
+.faculty-actions {
+    justify-content: flex-start;
+    padding-top: 10px;
 }
 
 // Action & Filter Bar
@@ -331,42 +341,42 @@
 }
 
 .modal-card {
-    width: 100%;
-    max-width: 800px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    width: clamp(420px, 70vw, 900px);
+    max-height: 90vh;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
     display: flex;
     flex-direction: column;
-    padding: 30px;
+    padding: 26px 32px 28px;
 }
 
 // New Header for "Add New Faculty"
 .modal-header-add {
-    padding: 30px 30px 10px; /* Adjusted padding to match screenshot */
-    border-bottom: 1px solid #e5e7eb; /* Subtle separator */
-    margin-bottom: 20px; /* Space before first field */
+    padding: 0 0 18px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 20px;
 }
 
 .modal-header-title {
     margin: 0;
-    color: #374151;
-    font-size: 24px; /* Slightly larger title */
+    color: #1f2937;
+    font-size: 24px;
     font-weight: 700;
+    letter-spacing: 0.01em;
 }
 
 .modal-header-add .modal-header-subtitle {
-    margin-top: 5px;
+    margin-top: 6px;
     color: #6b7280;
-    font-size: 15px;
+    font-size: 14px;
 }
 
 // Header for "Edit Faculty" - simpler
 .modal-card > h3.modal-header-title {
-    /* Target the H3 directly when it's the only header element */
-    padding: 30px 30px 10px; /* Adjusted padding to match screenshot */
+    padding: 0 0 18px;
     margin: 0;
-    color: #374151;
+    color: #ccdff9;
     font-size: 24px;
     font-weight: 700;
     border-bottom: 1px solid #e5e7eb;
@@ -374,11 +384,12 @@
 }
 
 .modal-footer {
-    padding: 24px 30px 30px;
-    border-top: none;
+    padding: 20px 32px 28px;
+    border-top: 1px solid #e5e7eb;
     display: flex;
-    justify-content: center;
-    gap: 30px;
+    justify-content: flex-end;
+    gap: 5px;
+    background: #f9fafb;
 }
 
 /* Form Styles */
@@ -543,61 +554,53 @@
 
 /*
 ====================================
-     NEW MODAL DESIGN STYLES
+     MODAL FORM STYLES
 ====================================
 */
 
-.modal-header-new {
-    background: linear-gradient(135deg, #b8b3e9 0%, #9d96d4 100%);
-    padding: 20px 30px;
-    border-radius: 12px 12px 0 0;
-    margin: -30px -30px 25px -30px;
+.modal-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
 }
 
-.modal-title-new {
-    font-size: 18px;
+.modal-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 6px;
+    margin-bottom: 6px;
+}
+
+.modal-heading-title {
+    font-size: 22px;
     font-weight: 700;
     color: #1f2937;
-    margin: 0 0 5px 0;
+    margin: 0;
 }
 
-.modal-subtitle-new {
-    font-size: 13px;
-    color: #374151;
+.modal-heading-subtitle {
+    font-size: 14px;
+    color: #6b7280;
     margin: 0;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .form-grid-new {
     display: grid;
-    grid-template-columns: 90px 1fr 90px 1fr;
-    gap: 15px 12px;
-    align-items: center;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
 }
 
-.form-label-new {
-    font-size: 14px;
-    font-weight: 500;
-    color: #1f2937;
-    text-align: left;
-    margin: 0;
-}
-
-.form-input-new {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #1f2937;
-    background-color: #fff;
-    box-sizing: border-box;
-}
-
-.form-input-new:focus {
-    outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+.form-field-new {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .form-input-new.invalid-input,
@@ -609,6 +612,7 @@
 .input-with-error {
     display: flex;
     flex-direction: column;
+    gap: 4px;
 }
 
 .inline-error {
@@ -619,36 +623,18 @@
     line-height: 1.05;
 }
 
-.full-width-label {
-    grid-column: 1 / 2;
-}
-
-.full-width-input {
-    grid-column: 2 / 5;
-}
-
-.full-width-error {
-    grid-column: 1 / 5;
-    margin-top: -5px;
-}
-
 .modal-footer-new {
     display: flex;
     justify-content: center;
     gap: 15px;
-    margin-top: 25px;
-    padding-top: 20px;
+    margin-top: 12px;
+    padding-top: 14px;
     border-top: 1px solid #e5e7eb;
 }
 
 @media (max-height: 820px) {
     .modal-card {
         padding: 24px;
-    }
-
-    .modal-header-new {
-        padding: 18px 24px;
-        margin: -24px -24px 18px -24px;
     }
 
     .form-grid-new {
@@ -667,8 +653,8 @@
     }
 
     .modal-footer-new {
-        margin-top: 18px;
-        padding-top: 16px;
+        margin-top: 10px;
+        padding-top: 12px;
         gap: 12px;
     }
 
@@ -977,3 +963,4 @@
         width: 100%;
     }
 }
+

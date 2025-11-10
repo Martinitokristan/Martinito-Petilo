@@ -78,7 +78,7 @@ function Sidebar() {
                             `nav-item ${isActive ? "active" : ""}`
                         }
                     >
-                        <User size={18} /> <span>My Profile</span>
+                        <User size={18} /> <span>Admin</span>
                     </NavLink>
                 </nav>
             </aside>

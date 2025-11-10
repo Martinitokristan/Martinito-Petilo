@@ -560,18 +560,18 @@ function Faculty() {
         }
 
         return (
-            <>
-                <div className="modal-header-new">
-                    <h3 className="modal-title-new">
+            <div className="modal-card-content">
+                <div className="modal-heading">
+                    <h3 className="modal-heading-title">
                         {editingId ? "Edit Faculty" : "Add New Faculty"}
                     </h3>
-                    <p className="modal-subtitle-new">
+                    <p className="modal-heading-subtitle">
                         {editingId
                             ? "Update faculty details below"
                             : "Enter faculty details to add them to the system"}
                     </p>
                 </div>
-                <form onSubmit={handleSubmit}>
+                <form className="modal-form" onSubmit={handleSubmit}>
                     <div className="form-grid-new">
                         <label className="form-label-new">Department</label>
                         <select
@@ -620,7 +620,7 @@ function Faculty() {
                             required
                         />
 
-                        <label className="form-label-new">MI.Name</label>
+                        <label className="form-label-new">Middle Name</label>
                         <input
                             className="form-input-new"
                             placeholder="Middle Name"
@@ -673,7 +673,7 @@ function Faculty() {
                             <option value="other">Other</option>
                         </select>
 
-                        <label className="form-label-new">Phone No.</label>
+                        <label className="form-label-new">Phone Number</label>
                         <input
                             className="form-input-new"
                             placeholder="09XXXXXXXXX"
@@ -781,7 +781,14 @@ function Faculty() {
                                 </option>
                             ))}
                         </select>
-
+                        <label className="form-label-new">Address</label>
+                        <input
+                            className="form-input-new"
+                            placeholder="Address"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleInputChange}
+                        />
                         <label className="form-label-new">
                             Municipality / City
                         </label>
@@ -811,18 +818,6 @@ function Faculty() {
                                 </option>
                             ))}
                         </select>
-
-                        <label className="form-label-new full-width-label">
-                            Address
-                        </label>
-                        <input
-                            className="form-input-new full-width-input"
-                            placeholder="Address"
-                            name="address"
-                            value={formData.address}
-                            onChange={handleInputChange}
-                            required
-                        />
                     </div>
 
                     {error && (
@@ -844,7 +839,7 @@ function Faculty() {
                         </button>
                     </div>
                 </form>
-            </>
+            </div>
         );
     };
 
@@ -864,7 +859,7 @@ function Faculty() {
                     </button>
                 </header>
 
-                <div className="actions-row">
+                <div className="actions-row faculty-actions">
                     <div
                         className="filters"
                         style={{

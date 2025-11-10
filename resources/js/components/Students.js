@@ -1159,7 +1159,7 @@ function Students() {
                                             className="btn btn-light"
                                             onClick={() => onOpenEditForm(s)}
                                         >
-                                            ✎ Edit
+                                             Edit
                                         </button>
                                         {s.archived_at ? (
                                             <button
