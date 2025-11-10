@@ -481,6 +481,26 @@ function Students() {
             );
         }
     };
+    const handleArchive = async (id) => {
+            if (!confirm("Are you sure you want to archive this student?")) return;
+            try {
+                await axios.post(`/api/admin/students/${id}/archive`);
+                await refresh();
+                setModalMessage("Student has been successfully archived.");
+                setModalContentState("success");
+                setShowForm(true);
+            } catch (error) {
+                console.error("Archive error:", error);
+                setModalMessage(
+                    error.response?.data?.message || "Failed to archive faculty",
+                );
+                setModalContentState("error");
+                setShowForm(true);
+                if ([401, 403].includes(error.response?.status)) {
+                    window.location.href = "/login";
+                }
+            }
+        };
 
     const closeModalAndReset = async () => {
         await refresh();
