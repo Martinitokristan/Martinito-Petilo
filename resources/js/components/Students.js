@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
@@ -60,8 +61,9 @@ function Students() {
     const [municipalities, setMunicipalities] = useState([]);
     const [selectedRegionCode, setSelectedRegionCode] = useState("");
     const [selectedProvinceCode, setSelectedProvinceCode] = useState("");
-    const [selectedMunicipalityCode, setSelectedMunicipalityCode] =
-        useState("");
+    const [selectedMunicipalityCode, setSelectedMunicipalityCode] = useState("");
+    const [filtersLoading, setFiltersLoading] = useState(true);
+    const isMountedRef = useRef(true);
 
     const getItemCode = (item = {}) =>
         item?.code ||
@@ -159,6 +161,7 @@ function Students() {
     };
 
     const refresh = async () => {
+        setLoading(true);
         try {
             const params = new URLSearchParams();
             if (filters.search) params.set("search", filters.search);
@@ -172,38 +175,76 @@ function Students() {
             const url = "/api/admin/students" + (qs ? "?" + qs : "");
             const response = await axios.get(url);
 
-            setStudents(response.data || []);
-            setError("");
+            if (isMountedRef.current) {
+                setStudents(response.data || []);
+                setError("");
+            }
         } catch (e) {
             console.error("API Error:", e);
-            setError("Failed to load students");
+            if (isMountedRef.current) {
+                setError("Failed to load students");
+            }
         } finally {
-            setLoading(false);
+            if (isMountedRef.current) {
+                setLoading(false);
+            }
         }
     };
 
     useEffect(() => {
-        Promise.all([
-            axios.get("/api/admin/courses").catch(() => ({ data: [] })),
-            axios.get("/api/admin/departments").catch(() => ({ data: [] })),
-            axios.get("/api/admin/academic-years").catch(() => ({ data: [] })),
-            axios
-                .get("/api/admin/locations/regions")
-                .catch(() => ({ data: [] })),
-        ])
-            .then(([coursesRes, deptsRes, yearsRes, regionsRes]) => {
-                setCourses(coursesRes.data || []);
-                setDepartments(deptsRes.data || []);
-                setAcademicYears(yearsRes.data || []);
-                setRegions(regionsRes.data || []);
-                refresh();
-            })
-            .catch((err) => {
-                console.error("Initial load error:", err);
-            })
-            .finally(() => {
-                setInitialLoading(false);
-            });
+        const loadInitialStudents = async () => {
+            setInitialLoading(true);
+            try {
+                await refresh();
+            } finally {
+                if (isMountedRef.current) {
+                    setInitialLoading(false);
+                }
+            }
+        };
+
+        const loadAncillaryData = async () => {
+            setFiltersLoading(true);
+            try {
+                const [coursesRes, deptsRes, yearsRes, regionsRes] =
+                    await Promise.all([
+                        axios.get("/api/admin/courses"),
+                        axios.get("/api/admin/departments"),
+                        axios.get("/api/admin/academic-years"),
+                        axios.get("/api/admin/locations/regions"),
+                    ]);
+                if (isMountedRef.current) {
+                    setCourses(Array.isArray(coursesRes.data) ? coursesRes.data : []);
+                    setDepartments(
+                        Array.isArray(deptsRes.data) ? deptsRes.data : [],
+                    );
+                    setAcademicYears(
+                        Array.isArray(yearsRes.data) ? yearsRes.data : [],
+                    );
+                    setRegions(Array.isArray(regionsRes.data) ? regionsRes.data : []);
+                }
+            } catch (err) {
+                console.error("Failed to load student filters", err);
+                if (isMountedRef.current) {
+                    setCourses([]);
+                    setDepartments([]);
+                    setAcademicYears([]);
+                    setRegions([]);
+                }
+            } finally {
+                if (isMountedRef.current) {
+                    setFiltersLoading(false);
+                }
+            }
+        };
+
+        isMountedRef.current = true;
+        loadInitialStudents();
+        loadAncillaryData();
+
+        return () => {
+            isMountedRef.current = false;
+        };
     }, []);
 
     useEffect(() => {
@@ -411,8 +452,10 @@ function Students() {
             }
 
             if (response.status === 200 || response.status === 201) {
-                // Show success modal first
                 setModalContentState("success");
+                refresh().catch((loadErr) => {
+                    console.error("Failed to refresh student list", loadErr);
+                });
             } else {
                 setModalContentState("form");
                 setError("Unexpected response from API");
@@ -439,40 +482,6 @@ function Students() {
         }
     };
 
-    const handleArchive = async (id) => {
-        if (!window.confirm("Are you sure you want to archive this student?"))
-            return;
-
-        try {
-            await getCsrfCookie();
-            await axios.post(`/api/admin/students/${id}/archive`);
-            setModalMessage("Student has been successfully archived.");
-            setModalContentState("success");
-            setShowForm(true);
-        } catch (err) {
-            console.error("Archive error:", err);
-            setModalMessage(
-                err.response?.data?.error || "Failed to archive student",
-            );
-            setModalContentState("error");
-            setShowForm(true);
-        }
-    };
-
-    const handleRestore = async (id) => {
-        if (!window.confirm("Restore this student?")) return;
-
-        try {
-            await getCsrfCookie();
-            await axios.post(`/api/admin/students/${id}/restore`);
-            await refresh();
-        } catch (err) {
-            console.error("Restore error:", err);
-            alert(err.response?.data?.error || "Failed to restore student");
-        }
-    };
-
-    // Refresh only after clicking "Done"
     const closeModalAndReset = async () => {
         await refresh();
         setShowForm(false);
@@ -619,6 +628,7 @@ function Students() {
                                 });
                             }}
                             required
+                            disabled={filtersLoading}
                         >
                             <option value="">Select Department</option>
                             {departments.map((d) => (
@@ -639,6 +649,7 @@ function Students() {
                                 setForm({ ...form, course_id: e.target.value })
                             }
                             required
+                            disabled={filtersLoading}
                         >
                             <option value="">Select Course</option>
                             {courses
@@ -820,6 +831,7 @@ function Students() {
                                 })
                             }
                             required
+                            disabled={filtersLoading}
                         >
                             <option value="">Select Academic Year</option>
                             {academicYears.map((a) => (
@@ -841,6 +853,7 @@ function Students() {
                                 handleRegionChange(code);
                             }}
                             required
+                            disabled={filtersLoading}
                         >
                             <option value="">Select Region</option>
                             {regions.map((region) => (
@@ -1012,6 +1025,7 @@ function Students() {
                                 });
                             }}
                             style={{ minWidth: 180 }}
+                            disabled={filtersLoading}
                         >
                             <option value="">⚗ All Department</option>
                             {departments
@@ -1057,6 +1071,7 @@ function Students() {
                                 });
                             }}
                             style={{ minWidth: 180 }}
+                            disabled={filtersLoading}
                         >
                             <option value="">⚗ All Course</option>
                             {courses
@@ -1089,6 +1104,7 @@ function Students() {
                                 })
                             }
                             style={{ minWidth: 180 }}
+                            disabled={filtersLoading}
                         >
                             <option value="">⚗ All Academic Year</option>
                             {academicYears.map((a) => (
@@ -1107,6 +1123,7 @@ function Students() {
                     <table className="students-table">
                         <thead>
                             <tr>
+                                <th>Student ID</th>
                                 <th>Student Name</th>
                                 <th>Department</th>
                                 <th>Course</th>
@@ -1118,6 +1135,7 @@ function Students() {
                         <tbody>
                             {students.map((s) => (
                                 <tr key={s.student_id}>
+                                    <td>{s.student_id}</td>
                                     <td>
                                         {s.fullName ||
                                             `${s.f_name} ${
@@ -1159,7 +1177,7 @@ function Students() {
                                             className="btn btn-light"
                                             onClick={() => onOpenEditForm(s)}
                                         >
-                                            ✎ Edit
+                                            Edit
                                         </button>
                                         {s.archived_at ? (
                                             <button

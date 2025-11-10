@@ -41,6 +41,11 @@ class AcademicYearController extends Controller
         if ($academicYear->trashed()) {
             return response()->json(['message' => 'Already archived'], 200);
         }
+
+        \App\Models\StudentProfile::where('academic_year_id', $id)
+            ->whereNull('archived_at')
+            ->update(['status' => 'inactive']);
+
         $academicYear->delete();
         return response()->json(['message' => 'Academic year archived successfully']);
     }
@@ -51,7 +56,13 @@ class AcademicYearController extends Controller
         if (!$academicYear->trashed()) {
             return response()->json(['message' => 'Not archived'], 200);
         }
+
         $academicYear->restore();
+
+        \App\Models\StudentProfile::where('academic_year_id', $id)
+            ->whereNull('archived_at')
+            ->update(['status' => 'active']);
+
         return response()->json($academicYear->fresh(), 200); // Return refreshed model
     }
 

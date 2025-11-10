@@ -170,6 +170,18 @@ class FacultyController extends Controller
                 'status' => 'nullable|in:active,inactive'
             ]);
 
+            $statusIsInactive = ($validated['status'] ?? null) === 'inactive';
+            $departmentChanged = array_key_exists('department_id', $validated)
+                ? (int) ($faculty->department_id ?? 0) !== (int) ($validated['department_id'] ?? 0)
+                : false;
+
+            if ($statusIsInactive && $departmentChanged && $validated['department_id']) {
+                $newDepartment = Department::withTrashed()->find($validated['department_id']);
+                if ($newDepartment && is_null($newDepartment->archived_at)) {
+                    $validated['status'] = 'active';
+                }
+            }
+
             $faculty->update($validated);
             
             // If position is Department Head, update the department's department_head_id

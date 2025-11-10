@@ -300,7 +300,6 @@ function MyProfile() {
 
                 setProfile(updatedProfile);
                 setInitialProfile(updatedProfile);
-                // Clear local password fields
                 setCurrentPassword("");
                 setNewPassword("");
                 setNewPasswordConfirmation("");
@@ -308,6 +307,11 @@ function MyProfile() {
                 setIsEditing(false);
                 setModalMessage("Profile updated successfully!");
                 setShowModal(true);
+
+                // Refresh profile data in the background
+                fetchProfile().catch((refreshErr) => {
+                    console.error("Failed to refresh profile", refreshErr);
+                });
             } else {
                 setError("Failed to update profile");
             }

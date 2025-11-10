@@ -153,6 +153,8 @@ function Report() {
                     ),
                 );
             }
+            setModalState("success");
+            setModalMessage("Report generated successfully!");
         } catch {
             setModalState("error");
             setModalMessage("Failed to generate report.");
@@ -261,7 +263,6 @@ function Report() {
             await axios.post("/api/admin/reports/students/import");
             setModalState("success");
             setModalMessage("Imported students from Google Sheets!");
-            // Optionally, refresh the report/table
             handleGenerateReport();
         } catch {
             setModalState("error");

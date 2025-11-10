@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
@@ -45,6 +45,8 @@ function Faculty() {
         useState("");
     const [emailManuallyEdited, setEmailManuallyEdited] = useState(false);
     const [emailWarning, setEmailWarning] = useState("");
+    const [filtersLoading, setFiltersLoading] = useState(true);
+    const isMountedRef = useRef(true);
 
     const getItemCode = (item = {}) =>
         item?.code ||
@@ -69,12 +71,16 @@ function Faculty() {
             const qs = params.toString();
             const url = "/api/admin/faculty" + (qs ? "?" + qs : "");
             const r = await axios.get(url);
-            setFaculty(r.data.filter((f) => !f.archived_at));
+            if (isMountedRef.current) {
+                setFaculty(r.data.filter((f) => !f.archived_at));
+            }
         } catch (error) {
             console.error("Failed to load faculty", error);
-            setError("Failed to load faculty");
-            if ([401, 403].includes(error.response?.status)) {
-                window.location.href = "/login";
+            if (isMountedRef.current) {
+                setError("Failed to load faculty");
+                if ([401, 403].includes(error.response?.status)) {
+                    window.location.href = "/login";
+                }
             }
         }
     };
@@ -82,12 +88,16 @@ function Faculty() {
     const loadDepartments = async () => {
         try {
             const r = await axios.get("/api/admin/departments");
-            setDepartments(r.data);
+            if (isMountedRef.current) {
+                setDepartments(r.data);
+            }
         } catch (error) {
             console.error("Failed to load departments", error);
-            setError("Failed to load departments");
-            if ([401, 403].includes(error.response?.status)) {
-                window.location.href = "/login";
+            if (isMountedRef.current) {
+                setError("Failed to load departments");
+                if ([401, 403].includes(error.response?.status)) {
+                    window.location.href = "/login";
+                }
             }
         }
     };
@@ -95,10 +105,14 @@ function Faculty() {
     const loadRegions = async () => {
         try {
             const response = await axios.get("/api/admin/locations/regions");
-            setRegions(response.data || []);
+            if (isMountedRef.current) {
+                setRegions(response.data || []);
+            }
         } catch (error) {
             console.error("Failed to load regions", error);
-            setRegions([]);
+            if (isMountedRef.current) {
+                setRegions([]);
+            }
         }
     };
 
@@ -153,17 +167,39 @@ function Faculty() {
         setProvinces([]);
         setMunicipalities([]);
         setEmailWarning("");
-        // Reload table after closing success modal
         await loadFaculty();
     };
 
     useEffect(() => {
-        const initialLoad = async () => {
-            await Promise.all([loadDepartments(), loadRegions()]);
-            await loadFaculty();
-            setInitialLoading(false);
+        const loadInitialFaculty = async () => {
+            setInitialLoading(true);
+            try {
+                await loadFaculty();
+            } finally {
+                if (isMountedRef.current) {
+                    setInitialLoading(false);
+                }
+            }
         };
-        initialLoad();
+
+        const loadFilters = async () => {
+            setFiltersLoading(true);
+            try {
+                await Promise.all([loadDepartments(), loadRegions()]);
+            } finally {
+                if (isMountedRef.current) {
+                    setFiltersLoading(false);
+                }
+            }
+        };
+
+        isMountedRef.current = true;
+        loadInitialFaculty();
+        loadFilters();
+
+        return () => {
+            isMountedRef.current = false;
+        };
     }, []);
 
     useEffect(() => {
@@ -361,6 +397,10 @@ function Faculty() {
             }
             if ([200, 201].includes(response.status)) {
                 setModalContentState("success");
+                // Refresh list in the background so the success modal appears immediately
+                loadFaculty().catch((loadErr) => {
+                    console.error("Failed to refresh faculty list", loadErr);
+                });
             }
         } catch (error) {
             console.error("Save error:", error);
@@ -395,6 +435,7 @@ function Faculty() {
         if (!confirm("Are you sure you want to archive this faculty?")) return;
         try {
             await axios.post(`/api/admin/faculty/${id}/archive`);
+            await loadFaculty();
             setModalMessage("Faculty has been successfully archived.");
             setModalContentState("success");
             setShowForm(true);
@@ -934,6 +975,7 @@ function Faculty() {
                     <table className="faculty-table">
                         <thead>
                             <tr>
+                                <th>Faculty ID</th>
                                 <th>Faculty Name</th>
                                 <th>Department</th>
                                 <th>Position</th>
@@ -944,6 +986,7 @@ function Faculty() {
                         <tbody>
                             {faculty.map((f) => (
                                 <tr key={f.faculty_id}>
+                                    <td>{f.faculty_id}</td>
                                     <td>{`${f.f_name} ${
                                         f.m_name ? f.m_name + " " : ""
                                     }${f.l_name}${

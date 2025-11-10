@@ -93,6 +93,7 @@ class ReportController extends Controller
 
         $validated = $request->validate([
             'course_id' => ['nullable', 'integer', 'exists:courses,course_id'],
+            'status' => ['nullable', Rule::in(self::STUDENT_STATUSES)],
             'export' => ['required', 'string'],
             // ...other rules
         ]);
@@ -100,6 +101,11 @@ class ReportController extends Controller
         $query = StudentProfile::query()
             ->with(['course', 'department', 'academicYear'])
             ->whereNull('archived_at');
+
+        $status = $validated['status'] ?? 'active';
+        if ($status) {
+            $query->where('status', $status);
+        }
 
         // Only filter if course_id is present
         if (!empty($validated['course_id'])) {
@@ -113,7 +119,7 @@ class ReportController extends Controller
             'course' => !empty($validated['course_id'] ?? null) ? Course::find($validated['course_id']) : null,
             'department' => !empty($validated['department_id'] ?? null) ? Department::find($validated['department_id']) : null,
             'academic_year' => !empty($validated['academic_year_id'] ?? null) ? AcademicYear::find($validated['academic_year_id']) : null,
-            'status' => $validated['status'] ?? null,
+            'status' => $status,
         ];
 
         if (($validated['export'] ?? null) === 'google_sheets') {
@@ -203,8 +209,9 @@ class ReportController extends Controller
             $query->where('department_id', $validated['department_id']);
         }
 
-        if (!empty($validated['status'])) {
-            $query->where('status', $validated['status']);
+        $facultyStatus = $validated['status'] ?? 'active';
+        if ($facultyStatus) {
+            $query->where('status', $facultyStatus);
         }
 
         // For faculty
@@ -212,7 +219,7 @@ class ReportController extends Controller
 
         $filters = [
             'department' => !empty($validated['department_id']) ? Department::find($validated['department_id']) : null,
-            'status' => $validated['status'] ?? null,
+            'status' => $facultyStatus,
         ];
 
         if (($validated['export'] ?? null) === 'google_sheets') {
@@ -297,7 +304,8 @@ class ReportController extends Controller
 
             $facultyQuery = \App\Models\FacultyProfile::query()
                 ->with(['department'])
-                ->whereNull('archived_at');
+                ->whereNull('archived_at')
+                ->where('status', 'active');
 
             if ($departmentId) {
                 $facultyQuery->where('department_id', $departmentId);
@@ -320,7 +328,8 @@ class ReportController extends Controller
                     'department',
                     'academicYear',
                 ])
-                ->whereNull('archived_at');
+                ->whereNull('archived_at')
+                ->where('status', 'active');
 
             if ($courseId) {
                 $studentsQuery->where('course_id', $courseId);
@@ -346,6 +355,7 @@ class ReportController extends Controller
                 'academicYear:academic_year_id,school_year',
             ])
             ->whereNull('archived_at')
+            ->where('status', 'active')
             ->orderBy('student_id')
             ->get();
 
@@ -388,6 +398,7 @@ class ReportController extends Controller
         $faculty = FacultyProfile::query()
             ->with(['department:department_id,department_name'])
             ->whereNull('archived_at')
+            ->where('status', 'active')
             ->orderBy('faculty_id')
             ->get();
 

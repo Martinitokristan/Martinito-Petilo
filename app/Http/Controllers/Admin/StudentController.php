@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\Department;
 use App\Models\StudentProfile;
+
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -267,6 +269,35 @@ class StudentController extends Controller
                         'duplicate' => ['A student with the same full name and birth date already exists.'],
                     ],
                 ], 422);
+            }
+
+            $statusIsInactive = ($validated['status'] ?? null) === 'inactive';
+            $courseChanged = (int) $student->course_id !== (int) $validated['course_id'];
+            $departmentChanged = (int) $student->department_id !== (int) $validated['department_id'];
+            $academicYearChanged = (int) $student->academic_year_id !== (int) $validated['academic_year_id'];
+
+            if ($statusIsInactive && ($courseChanged || $departmentChanged || $academicYearChanged)) {
+                $courseIsActive = false;
+                if ($courseChanged) {
+                    $newCourse = Course::withTrashed()->find($validated['course_id']);
+                    $courseIsActive = $newCourse && is_null($newCourse->archived_at) && $newCourse->course_status === 'active';
+                }
+
+                $departmentIsActive = false;
+                if ($departmentChanged) {
+                    $newDepartment = Department::withTrashed()->find($validated['department_id']);
+                    $departmentIsActive = $newDepartment && is_null($newDepartment->archived_at);
+                }
+
+                $academicYearIsActive = false;
+                if ($academicYearChanged && $validated['academic_year_id']) {
+                    $newAcademicYear = AcademicYear::withTrashed()->find($validated['academic_year_id']);
+                    $academicYearIsActive = $newAcademicYear && is_null($newAcademicYear->archived_at);
+                }
+
+                if ($courseIsActive || $departmentIsActive || $academicYearIsActive) {
+                    $validated['status'] = 'active';
+                }
             }
 
             $validated['age'] = Carbon::parse($validated['date_of_birth'])->age;

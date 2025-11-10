@@ -117,7 +117,9 @@ function Settings() {
         e.preventDefault();
         try {
             await ensureCsrf();
+            let itemTypeLabel = "Item";
             if (active === "courses") {
+                itemTypeLabel = "Course";
                 const payload = {
                     course_name: form.course_name.trim(),
                     department_id: form.department_id || undefined,
@@ -133,8 +135,8 @@ function Settings() {
                 } else {
                     await axios.post("/api/admin/courses", payload);
                 }
-                await refreshData();
             } else if (active === "departments") {
+                itemTypeLabel = "Department";
                 const payload = {
                     department_name: form.department_name.trim(),
                 };
@@ -146,8 +148,8 @@ function Settings() {
                 } else {
                     await axios.post("/api/admin/departments", payload);
                 }
-                await refreshData();
             } else if (active === "academic-years") {
+                itemTypeLabel = "Academic Year";
                 const payload = {
                     school_year: form.school_year.trim(),
                 };
@@ -159,9 +161,17 @@ function Settings() {
                 } else {
                     await axios.post("/api/admin/academic-years", payload);
                 }
-                await refreshData();
             }
+
+            await refreshData();
             setShowForm(false);
+            setModalMessage(
+                `${itemTypeLabel} has been successfully ${
+                    isEditing ? "updated" : "added"
+                }.`,
+            );
+            setModalState("success");
+            setShowModal(true);
         } catch (error) {
             setError(
                 error.response?.data?.message ||
@@ -183,6 +193,7 @@ function Settings() {
             await ensureCsrf();
             const url = `/api/admin/${active}/${id}/archive`;
             await axios.post(url);
+            await refreshData();
             const itemType =
                 active === "courses"
                     ? "Course"
@@ -264,6 +275,7 @@ function Settings() {
             };
             const apiType = typeMap[item._type] || item._type;
             await axios.post(`/api/admin/${apiType}/${item._id}/restore`);
+            await loadArchivedItems();
             setModalMessage(`${item._type} has been successfully restored.`);
             setModalState("success");
             setShowModal(true);

@@ -178,6 +178,11 @@
     background: transparent;
 }
 
+.students-table td:first-child {
+    color: #6b7280;
+    font-weight: 600;
+}
+
 /* Zebra striping */
 .students-table tbody tr {
     background: #ffffff;
@@ -189,12 +194,22 @@
     background: #f6f7ff;
 }
 
+/* Status column spacing */
+.students-table th:nth-last-child(2),
+.students-table td:nth-last-child(2) {
+    padding-right: 32px;
+}
+
 /* Action column */
 .students-table th:last-child,
 .students-table td:last-child {
     width: 180px;
     text-align: center;
     white-space: nowrap;
+}
+
+.page-card .students-table th:last-child {
+    text-align: center;
 }
 
 .students-table td:last-child {

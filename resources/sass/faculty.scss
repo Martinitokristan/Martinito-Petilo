@@ -255,6 +255,11 @@
     vertical-align: middle;
 }
 
+.faculty-table td:first-child {
+    color: #6b7280;
+    font-weight: 600;
+}
+
 .faculty-table tbody tr {
     background: #ffffff;
     transition: background-color 0.2s ease;
