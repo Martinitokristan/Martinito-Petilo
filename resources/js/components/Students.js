@@ -492,7 +492,7 @@ function Students() {
             } catch (error) {
                 console.error("Archive error:", error);
                 setModalMessage(
-                    error.response?.data?.message || "Failed to archive faculty",
+                    error.response?.data?.message || "Failed to archive student",
                 );
                 setModalContentState("error");
                 setShowForm(true);
