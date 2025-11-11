@@ -13,13 +13,18 @@ class DepartmentController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Department::with(['departmentHead' => function ($q) {
-                $q->select('faculty_id', 'f_name', 'm_name', 'l_name', 'suffix');
-            }]);
+            $query = Department::with([
+                'departmentHead' => function ($q) {
+                    $q->select('faculty_id', 'f_name', 'm_name', 'l_name', 'suffix');
+                },
+                'faculty' => function ($q) {
+                    $q->select('faculty_id', 'f_name', 'm_name', 'l_name', 'suffix', 'position', 'department_id', 'archived_at');
+                },
+            ]);
             
             $departments = $query->get();
             
-            // Format the department head name
+            // Format the department head name and expose assignment availability
             $departments->each(function ($dept) {
                 if ($dept->departmentHead) {
                     $dept->department_head = trim(implode(' ', array_filter([
@@ -29,10 +34,19 @@ class DepartmentController extends Controller
                         $dept->departmentHead->suffix ? ', ' . $dept->departmentHead->suffix : ''
                     ])));
                 } else {
-                    $dept->department_head = '-';
+                    $dept->department_head = '——————';
                 }
-                // Remove the departmentHead relationship object to avoid React error
+
+                $activeFaculty = $dept->faculty->whereNull('archived_at');
+                $currentDeans = $activeFaculty->where('position', 'Dean')->pluck('faculty_id');
+
+                $dept->has_department_head = (bool) $dept->departmentHead;
+                $dept->current_department_head_id = $dept->departmentHead->faculty_id ?? null;
+                $dept->has_dean = $currentDeans->isNotEmpty();
+                $dept->current_dean_ids = $currentDeans->values();
+
                 unset($dept->departmentHead);
+                unset($dept->faculty);
             });
             
             return response()->json($departments);

@@ -137,7 +137,7 @@ class StudentController extends Controller
                 $query->where('academic_year_id', $request->academic_year_id);
             }
 
-            $students = $query->orderBy('l_name', 'asc')->get();
+            $students = $query->orderBy('student_id', 'asc')->get();
             Log::info('Students loaded successfully: ', ['count' => $students->count()]);
             return Response::json($students);
         } catch (\Illuminate\Database\QueryException $e) {

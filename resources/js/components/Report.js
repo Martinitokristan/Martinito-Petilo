@@ -153,8 +153,8 @@ function Report() {
                     ),
                 );
             }
-            setModalState("success");
-            setModalMessage("Report generated successfully!");
+            setModalState("");
+            setModalMessage("");
         } catch {
             setModalState("error");
             setModalMessage("Failed to generate report.");

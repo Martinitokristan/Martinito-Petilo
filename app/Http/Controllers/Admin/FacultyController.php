@@ -56,7 +56,7 @@ class FacultyController extends Controller
                 $query->where('department_id', $request->department_id);
             }
 
-            $faculty = $query->orderBy('l_name', 'asc')->get();
+            $faculty = $query->orderBy('faculty_id', 'asc')->get();
             Log::info('Faculty loaded successfully: ', ['count' => $faculty->count()]);
             return Response::json($faculty);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -102,11 +102,23 @@ class FacultyController extends Controller
                     FacultyProfile::where('department_id', $validated['department_id'])
                         ->where('faculty_id', '!=', $faculty->faculty_id)
                         ->where('position', 'Department Head')
-                        ->update(['position' => 'Instructor']);
+                        ->update(['position' => null]);
                     
                     Log::info('Department head assigned automatically', ['department_id' => $validated['department_id'], 'faculty_id' => $faculty->faculty_id]);
                 } catch (\Exception $e) {
                     Log::error('Error auto-assigning department head: ', ['message' => $e->getMessage()]);
+                }
+            }
+
+            if (isset($validated['position']) && $validated['position'] === 'Dean' && isset($validated['department_id'])) {
+                try {
+                    FacultyProfile::where('department_id', $validated['department_id'])
+                        ->where('faculty_id', '!=', $faculty->faculty_id)
+                        ->where('position', 'Dean')
+                        ->update(['position' => null]);
+                    Log::info('Dean assigned automatically', ['department_id' => $validated['department_id'], 'faculty_id' => $faculty->faculty_id]);
+                } catch (\Exception $e) {
+                    Log::error('Error auto-assigning dean: ', ['message' => $e->getMessage()]);
                 }
             }
             
@@ -195,7 +207,7 @@ class FacultyController extends Controller
                     FacultyProfile::where('department_id', $validated['department_id'])
                         ->where('faculty_id', '!=', $id)
                         ->where('position', 'Department Head')
-                        ->update(['position' => 'Instructor']);
+                        ->update(['position' => null]);
                     
                     Log::info('Department head assigned automatically', ['department_id' => $validated['department_id'], 'faculty_id' => $id]);
                 } catch (\Exception $e) {
@@ -248,6 +260,56 @@ class FacultyController extends Controller
         try {
             $faculty = FacultyProfile::withTrashed()->findOrFail($id);
             $faculty->restore();
+
+            if ($faculty->position === 'Department Head' && $faculty->department_id) {
+                $department = \App\Models\Department::find($faculty->department_id);
+                $hasExistingDifferentHead = $department && $department->department_head_id && $department->department_head_id !== $faculty->faculty_id;
+
+                if ($department && !$hasExistingDifferentHead) {
+                    try {
+                        $department->update(['department_head_id' => $faculty->faculty_id]);
+                        Log::info('Department head restored', [
+                            'department_id' => $faculty->department_id,
+                            'faculty_id' => $faculty->faculty_id,
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Error restoring department head link: ', ['message' => $e->getMessage()]);
+                    }
+                } else {
+                    try {
+                        $faculty->position = null;
+                        $faculty->save();
+                        Log::info('Restored faculty cleared from department head role to preserve current assignment', [
+                            'department_id' => $faculty->department_id,
+                            'faculty_id' => $faculty->faculty_id,
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Error clearing restored faculty assignment: ', ['message' => $e->getMessage()]);
+                    }
+                }
+            }
+
+            if ($faculty->position === 'Dean' && $faculty->department_id) {
+                $otherActiveDeanExists = FacultyProfile::where('department_id', $faculty->department_id)
+                    ->where('faculty_id', '!=', $faculty->faculty_id)
+                    ->whereNull('archived_at')
+                    ->where('position', 'Dean')
+                    ->exists();
+
+                if ($otherActiveDeanExists) {
+                    try {
+                        $faculty->position = null;
+                        $faculty->save();
+                        Log::info('Restored faculty cleared from dean role to preserve current assignment', [
+                            'department_id' => $faculty->department_id,
+                            'faculty_id' => $faculty->faculty_id,
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Error clearing restored dean assignment: ', ['message' => $e->getMessage()]);
+                    }
+                }
+            }
+
             return Response::json(['message' => 'Faculty restored'], 200);
         } catch (\Exception $e) {
             Log::error('Error restoring faculty: ', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);

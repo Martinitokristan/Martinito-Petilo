@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
@@ -47,6 +47,51 @@ function Faculty() {
     const [emailWarning, setEmailWarning] = useState("");
     const [filtersLoading, setFiltersLoading] = useState(true);
     const isMountedRef = useRef(true);
+
+    const selectedDepartmentId = formData.department_id
+        ? Number(formData.department_id)
+        : null;
+    const editingFacultyId = editingId ? Number(editingId) : null;
+    const selectedDepartment = useMemo(() => {
+        if (!selectedDepartmentId) return null;
+        return (
+            departments.find(
+                (dept) => Number(dept.department_id) === selectedDepartmentId,
+            ) || null
+        );
+    }, [departments, selectedDepartmentId]);
+
+    const currentDeanIds = Array.isArray(selectedDepartment?.current_dean_ids)
+        ? selectedDepartment.current_dean_ids.map(Number)
+        : [];
+    const departmentHeadUnavailable = Boolean(
+        selectedDepartment?.has_department_head &&
+            selectedDepartment?.current_department_head_id !== editingFacultyId,
+    );
+    const deanUnavailable = Boolean(
+        selectedDepartment?.has_dean &&
+            (editingFacultyId === null || !currentDeanIds.includes(editingFacultyId)),
+    );
+
+    useEffect(() => {
+        if (!selectedDepartment) return;
+        setFormData((prev) => {
+            let nextPosition = prev.position;
+            if (
+                departmentHeadUnavailable &&
+                prev.position === "Department Head"
+            ) {
+                nextPosition = "Instructor";
+            }
+            if (deanUnavailable && prev.position === "Dean") {
+                nextPosition = "Instructor";
+            }
+            if (nextPosition === prev.position) {
+                return prev;
+            }
+            return { ...prev, position: nextPosition };
+        });
+    }, [departmentHeadUnavailable, deanUnavailable, selectedDepartment]);
 
     const getItemCode = (item = {}) =>
         item?.code ||
@@ -174,7 +219,7 @@ function Faculty() {
         const loadInitialFaculty = async () => {
             setInitialLoading(true);
             try {
-                await loadFaculty();
+                await Promise.all([loadFaculty(), loadDepartments()]);
             } finally {
                 if (isMountedRef.current) {
                     setInitialLoading(false);
@@ -397,9 +442,9 @@ function Faculty() {
             }
             if ([200, 201].includes(response.status)) {
                 setModalContentState("success");
-                // Refresh list in the background so the success modal appears immediately
-                loadFaculty().catch((loadErr) => {
-                    console.error("Failed to refresh faculty list", loadErr);
+                // Refresh lists in the background so the success modal appears immediately
+                Promise.all([loadFaculty(), loadDepartments()]).catch((loadErr) => {
+                    console.error("Failed to refresh faculty/departments", loadErr);
                 });
             }
         } catch (error) {
@@ -435,7 +480,7 @@ function Faculty() {
         if (!confirm("Are you sure you want to archive this faculty?")) return;
         try {
             await axios.post(`/api/admin/faculty/${id}/archive`);
-            await loadFaculty();
+            await Promise.all([loadFaculty(), loadDepartments()]);
             setModalMessage("Faculty has been successfully archived.");
             setModalContentState("success");
             setShowForm(true);
@@ -641,10 +686,15 @@ function Faculty() {
                             onChange={handleInputChange}
                             required
                         >
-                            <option value="Dean">Dean</option>
+                            <option value="Dean" disabled={deanUnavailable}>
+                                Dean
+                            </option>
                             <option value="Instructor">Instructor</option>
                             <option value="Part-time">Part-time</option>
-                            <option value="Department Head">
+                            <option
+                                value="Department Head"
+                                disabled={departmentHeadUnavailable}
+                            >
                                 Department Head
                             </option>
                         </select>
@@ -995,10 +1045,10 @@ function Faculty() {
                                     <td>
                                         {formatWithAcronym(
                                             f.department?.department_name ||
-                                                "-",
+                                                "——————",
                                         )}
                                     </td>
-                                    <td>{f.position || "-"}</td>
+                                    <td>{f.position || "——————"}</td>
                                     <td>
                                         <span
                                             className={`badge ${

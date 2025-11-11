@@ -1166,12 +1166,14 @@ function Students() {
                                     </td>
                                     <td>
                                         {formatWithAcronym(
-                                            s.department?.department_name,
+                                            s.department?.department_name ||
+                                                "——————",
                                         )}
                                     </td>
                                     <td>
                                         {formatWithAcronym(
-                                            s.course?.course_name,
+                                            s.course?.course_name ||
+                                                "——————",
                                         )}
                                     </td>
                                     <td>

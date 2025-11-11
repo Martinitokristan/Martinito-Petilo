@@ -440,7 +440,7 @@ function Settings() {
                                                     <td>
                                                         {c.department
                                                             ?.department_name ||
-                                                            "-"}
+                                                            "——————"}
                                                     </td>
                                                     <td>
                                                         <button
@@ -449,7 +449,7 @@ function Settings() {
                                                                 onOpenForm(c)
                                                             }
                                                         >
-                                                            ✎ Edit
+                                                            Edit
                                                         </button>
                                                         <button
                                                             className="btn btn-success btn-sm"
@@ -486,7 +486,7 @@ function Settings() {
                                                     <td>{d.department_name}</td>
                                                     <td>
                                                         {d.department_head ||
-                                                            "-"}
+                                                            "——————"}
                                                     </td>
                                                     <td>
                                                         <button
@@ -495,7 +495,7 @@ function Settings() {
                                                                 onOpenForm(d)
                                                             }
                                                         >
-                                                            ✎ Edit
+                                                            Edit
                                                         </button>
                                                         <button
                                                             className="btn btn-success btn-sm"
@@ -536,7 +536,7 @@ function Settings() {
                                                                 onOpenForm(a)
                                                             }
                                                         >
-                                                            ✎ Edit
+                                                            Edit
                                                         </button>
                                                         <button
                                                             className="btn btn-success btn-sm"
@@ -877,7 +877,7 @@ function Settings() {
                                                                         ? new Date(
                                                                               item.archived_at,
                                                                           ).toLocaleDateString()
-                                                                        : "-"}
+                                                                        : "——————"}
                                                                 </td>
                                                                 <td
                                                                     style={{
