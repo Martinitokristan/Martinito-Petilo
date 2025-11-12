@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Models\Department;
 
 class FacultyController extends Controller
 {
@@ -187,7 +188,8 @@ class FacultyController extends Controller
                 ? (int) ($faculty->department_id ?? 0) !== (int) ($validated['department_id'] ?? 0)
                 : false;
 
-            if ($statusIsInactive && $departmentChanged && $validated['department_id']) {
+            // If moving to a different department, and that target is active, ensure faculty becomes active
+            if ($departmentChanged && ! empty($validated['department_id'])) {
                 $newDepartment = Department::withTrashed()->find($validated['department_id']);
                 if ($newDepartment && is_null($newDepartment->archived_at)) {
                     $validated['status'] = 'active';

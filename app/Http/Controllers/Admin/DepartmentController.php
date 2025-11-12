@@ -101,6 +101,7 @@ class DepartmentController extends Controller
         // Set all faculty members in this department to inactive
         \App\Models\FacultyProfile::where('department_id', $id)
             ->whereNull('archived_at')
+            // mark inactive but keep position in DB (do not null position)
             ->update(['status' => 'inactive']);
         
         // Set all students in this department to inactive
@@ -113,6 +114,9 @@ class DepartmentController extends Controller
             ->whereNull('archived_at')
             ->delete();
         
+        // Clear department_head_id so we don't leave a stale reference
+        $department->update(['department_head_id' => null]);
+
         $department->delete(); // Uses SoftDeletes with archived_at
         return response()->json(['message' => 'Department archived successfully']);
     }

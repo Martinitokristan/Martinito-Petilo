@@ -8,6 +8,7 @@
 /public/js/
 /public/css/
 /public/mix-manifest.json
+/stoage/logs/laravel.logs
 .env
 .env.backup
 .phpunit.result.cache

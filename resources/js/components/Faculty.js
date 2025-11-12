@@ -56,7 +56,7 @@ function Faculty() {
         if (!selectedDepartmentId) return null;
         return (
             departments.find(
-                (dept) => Number(dept.department_id) === selectedDepartmentId,
+                (dept) => Number(dept.department_id) === selectedDepartmentId
             ) || null
         );
     }, [departments, selectedDepartmentId]);
@@ -66,11 +66,12 @@ function Faculty() {
         : [];
     const departmentHeadUnavailable = Boolean(
         selectedDepartment?.has_department_head &&
-            selectedDepartment?.current_department_head_id !== editingFacultyId,
+            selectedDepartment?.current_department_head_id !== editingFacultyId
     );
     const deanUnavailable = Boolean(
         selectedDepartment?.has_dean &&
-            (editingFacultyId === null || !currentDeanIds.includes(editingFacultyId)),
+            (editingFacultyId === null ||
+                !currentDeanIds.includes(editingFacultyId))
     );
 
     useEffect(() => {
@@ -168,7 +169,7 @@ function Faculty() {
         }
         try {
             const response = await axios.get(
-                `/api/admin/locations/regions/${code}/provinces`,
+                `/api/admin/locations/regions/${code}/provinces`
             );
             const list = response.data || [];
             setProvinces(list);
@@ -187,7 +188,7 @@ function Faculty() {
         }
         try {
             const response = await axios.get(
-                `/api/admin/locations/provinces/${code}/municipalities`,
+                `/api/admin/locations/provinces/${code}/municipalities`
             );
             const list = response.data || [];
             setMunicipalities(list);
@@ -278,7 +279,7 @@ function Faculty() {
             (member) =>
                 member.email_address &&
                 normalizeEmail(member.email_address) === normalized &&
-                member.faculty_id !== currentId,
+                member.faculty_id !== currentId
         );
         setEmailWarning(duplicate ? "Email already exists." : "");
         return duplicate;
@@ -383,7 +384,7 @@ function Faculty() {
     const handleMunicipalityChange = (code) => {
         setSelectedMunicipalityCode(code);
         const selected = municipalities.find(
-            (item) => getItemCode(item) === code,
+            (item) => getItemCode(item) === code
         );
         const municipalityName = getMunicipalityName(selected);
         setFormData((prev) => ({
@@ -397,7 +398,7 @@ function Faculty() {
         if (!normalized) return "";
         const match = items.find(
             (item) =>
-                (nameGetter(item) || "").trim().toLowerCase() === normalized,
+                (nameGetter(item) || "").trim().toLowerCase() === normalized
         );
         return match ? getItemCode(match) : "";
     };
@@ -435,7 +436,7 @@ function Faculty() {
             if (editingId) {
                 response = await axios.put(
                     `/api/admin/faculty/${editingId}`,
-                    payload,
+                    payload
                 );
             } else {
                 response = await axios.post("/api/admin/faculty", payload);
@@ -443,9 +444,14 @@ function Faculty() {
             if ([200, 201].includes(response.status)) {
                 setModalContentState("success");
                 // Refresh lists in the background so the success modal appears immediately
-                Promise.all([loadFaculty(), loadDepartments()]).catch((loadErr) => {
-                    console.error("Failed to refresh faculty/departments", loadErr);
-                });
+                Promise.all([loadFaculty(), loadDepartments()]).catch(
+                    (loadErr) => {
+                        console.error(
+                            "Failed to refresh faculty/departments",
+                            loadErr
+                        );
+                    }
+                );
             }
         } catch (error) {
             console.error("Save error:", error);
@@ -468,7 +474,7 @@ function Faculty() {
             setModalMessage(
                 error.response?.data?.error ||
                     error.response?.data?.message ||
-                    "Failed to save faculty",
+                    "Failed to save faculty"
             );
             if ([401, 403].includes(error.response?.status)) {
                 window.location.href = "/login";
@@ -487,7 +493,7 @@ function Faculty() {
         } catch (error) {
             console.error("Archive error:", error);
             setModalMessage(
-                error.response?.data?.message || "Failed to archive faculty",
+                error.response?.data?.message || "Failed to archive faculty"
             );
             setModalContentState("error");
             setShowForm(true);
@@ -513,7 +519,10 @@ function Faculty() {
             region: facultyMember.region || "",
             province: facultyMember.province || "",
             municipality: facultyMember.municipality || "",
-            department_id: facultyMember.department_id || "",
+            // if department relation is missing (archived), set empty to force selection
+            department_id: facultyMember.department
+                ? facultyMember.department_id
+                : "",
             position: facultyMember.position || "Dean",
             status: facultyMember.status || "active",
         });
@@ -525,7 +534,7 @@ function Faculty() {
         const regionCode = findCodeByName(
             regions,
             facultyMember.region,
-            getRegionName,
+            getRegionName
         );
         setSelectedRegionCode(regionCode);
 
@@ -534,7 +543,7 @@ function Faculty() {
             const provinceCode = findCodeByName(
                 provinceList,
                 facultyMember.province,
-                getProvinceName,
+                getProvinceName
             );
             setSelectedProvinceCode(provinceCode);
 
@@ -543,7 +552,7 @@ function Faculty() {
                 const municipalityCode = findCodeByName(
                     municipalityList,
                     facultyMember.municipality,
-                    getMunicipalityName,
+                    getMunicipalityName
                 );
                 setSelectedMunicipalityCode(municipalityCode);
             } else {
@@ -1003,7 +1012,7 @@ function Faculty() {
                             onChange={(e) =>
                                 handleFilterChange(
                                     "department_id",
-                                    e.target.value,
+                                    e.target.value
                                 )
                             }
                             style={{ minWidth: 180 }}
@@ -1045,10 +1054,14 @@ function Faculty() {
                                     <td>
                                         {formatWithAcronym(
                                             f.department?.department_name ||
-                                                "——————",
+                                                "——————"
                                         )}
                                     </td>
-                                    <td>{f.position || "——————"}</td>
+                                    <td>
+                                        {f.department
+                                            ? f.position || "——————"
+                                            : "——————"}
+                                    </td>
                                     <td>
                                         <span
                                             className={`badge ${
